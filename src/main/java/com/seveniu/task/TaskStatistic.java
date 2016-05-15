@@ -18,6 +18,7 @@ public class TaskStatistic {
 
     // createUrlCount = repeatUrlCount + successUrlCount + netErrorUrlCount
     // successUrlCount = doneUrlCount + parseErrorCount
+    // createNodeCount > doneNodeCount + parseErrorCount
 
 
     public int addCreateNodeCount(int num) {
