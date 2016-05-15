@@ -1,0 +1,8 @@
+/conf/application-home.yaml
+
+.DS_Store
+.gradle
+build
+.idea
+*.iml
+log

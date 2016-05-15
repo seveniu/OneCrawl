@@ -1,0 +1,152 @@
+
+println("******************")
+
+// project的额外属性，这里用于定义profile属性，模拟maven的profile
+ext {
+    // profile 默认值 在 gradle.properties 中定义
+    println "profile is : ${profile}"
+}
+buildscript {
+    repositories {
+        maven {
+            credentials {
+                username "guest"
+                password "qwerzxcvasdf"
+            }
+            url "http://101.200.170.176:8081/nexus/content/groups/public/"
+        }
+//        mavenLocal()
+//        if(profile.toUpperCase() == "DEV" ) {
+//            maven { url "http://192.168.0.165:8081/nexus/content/groups/public/" }
+//        } else if(profile.toUpperCase() == "USA" ) {
+//            mavenCentral()
+//        } else {
+//        }
+//        maven { url 'https://repo.spring.io/plugins-release' }
+//        maven { url "http://maven.oschina.net/content/groups/public/"}
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'web'
+    version = '0.1.0'
+}
+
+repositories {
+    maven {
+        credentials {
+            username "guest"
+            password "qwerzxcvasdf"
+        }
+        url "http://101.200.170.176:8081/nexus/content/groups/public/"
+    }
+//    mavenLocal()
+//    if(profile.toUpperCase() == "DEV" ) {
+//    } else if(profile.toUpperCase() == "USA" ) {
+//        mavenCentral()
+//    } else {
+//    }
+//    maven { url "http://106.120.106.228:18081/content/groups/public/" }
+//    maven { url "http://maven.oschina.net/content/groups/public/"}
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+
+    // Spring Boot 对这些运维相关的功能进行了整合，形成了一个功能完备和可定制的功能集，称之为 Actuator。
+    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+
+
+    println "${profile} compile actuator"
+    if (profile != "stable") {
+        compile("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+        println "compile devtool"
+    } else {
+        println "not compile actuator"
+    }
+
+
+    compile("org.codehaus.groovy:groovy-all:2.4.6")
+    compile("org.springframework.boot:spring-boot-starter-remote-shell:${springBootVersion}")
+
+//    compile('us.codecraft:webmagic-core:0.5.3')
+    compile('us.codecraft:webmagic-core:0.5.3'){
+        force = true
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12' //by both name and group
+        exclude group:'com.jayway.jsonpath',module:'json-path'
+    }
+    compile('us.codecraft:webmagic-extension:0.5.3'){
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12' //by both name and group
+    }
+    compile('com.jayway.jsonpath:json-path:0.8.1'){
+        exclude group: 'org.slf4j', module: 'slf4j-api' //by both name and group
+    }
+    compile('com.google.guava:guava:18.0')
+    compile('com.alibaba:druid:1.0.15')
+
+
+    compile('com.seveniu:Commons:0.0.2.4')
+
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+
+    //optional "org.springframework.boot:spring-boot-configuration-processor"
+}
+
+compileJava.dependsOn(processResources)
+
+sourceSets {
+    main {
+        resources {
+            srcDir "conf"
+            srcDir "conf-${profile}"
+            srcDir 'cmd'
+            srcDir 'script'
+        }
+    }
+}
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+    }
+}
+
+task wrapper(type: Wrapper) {
+    def version = '2.10'
+    gradleVersion = version
+    distributionUrl = "http://7xnyyx.com1.z0.glb.clouddn.com/gradle-${version}-all.zip"
+}
+
+
+mainClassName="com.seveniu.Application"
+bootRun {
+    // 从 gradle.properties 中读取
+    String springProfile = System.getProperty("spring.profiles.active")
+    println("system prop spring.profiles.active : ${springProfile}")
+    //手动设置 jvm 属性
+//    System.setProperty("spring.profiles.active", (String)springProfile)
+    systemProperties.putAt("spring.profiles.active",springProfile)
+    addResources = true
+}
+
+
+task curProfile << {
+    println("hello ${profile}")
+}
+
+task helloworld << {
+    println("hello world")
+}
+
+println("====================")
