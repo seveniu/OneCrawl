@@ -7,11 +7,9 @@ import org.slf4j.LoggerFactory;
  * Created by seveniu on 5/14/16.
  * DefaultConsumer
  */
-public class DefaultConsumer extends Consumer{
+public class DefaultConsumer extends Consumer {
     private Logger logger = LoggerFactory.getLogger(DefaultConsumer.class);
-    public DefaultConsumer() {
-        super("default");
-    }
+
 
     @Override
     public boolean has(String url) {
@@ -21,5 +19,10 @@ public class DefaultConsumer extends Consumer{
     @Override
     public void out(String result) {
         logger.info(result);
+    }
+
+    @Override
+    public String getName() {
+        return "default";
     }
 }

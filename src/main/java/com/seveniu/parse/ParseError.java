@@ -24,4 +24,12 @@ public class ParseError {
     public ParseErrorType getErrorType() {
         return errorType;
     }
+
+    @Override
+    public String toString() {
+        return "ParseError{" +
+                "field=" + field +
+                ", errorType=" + errorType +
+                '}';
+    }
 }

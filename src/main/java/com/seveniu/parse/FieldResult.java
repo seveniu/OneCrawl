@@ -6,12 +6,14 @@ package com.seveniu.parse;
  */
 public class FieldResult {
     private int fieldId;
+    private int fieldHtmlType;
     private String name;
     private String result;
 
-    public FieldResult(int fieldId,String name, String result) {
+    public FieldResult(int fieldId,int fieldHtmlType,String name, String result) {
         this.name = name;
         this.fieldId = fieldId;
+        this.fieldHtmlType = fieldHtmlType;
         this.result = result;
     }
 
@@ -29,6 +31,22 @@ public class FieldResult {
 
     public void setResult(String result) {
         this.result = result;
+    }
+
+    public int getFieldHtmlType() {
+        return fieldHtmlType;
+    }
+
+    public void setFieldHtmlType(int fieldHtmlType) {
+        this.fieldHtmlType = fieldHtmlType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

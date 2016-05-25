@@ -1,7 +1,6 @@
 package com.seveniu.node;
 
-import com.seveniu.parse.FieldResult;
-import com.seveniu.parse.ParseResult;
+import com.seveniu.parse.PageResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
  */
 public class Node {
     private String url;
-    private List<List<FieldResult>> parseResults = new ArrayList<>();
+    private List<PageResult> pages = new ArrayList<>();
 
     public Node(String url) {
         this.url = url;
@@ -22,11 +21,11 @@ public class Node {
         return url;
     }
 
-    public List<List<FieldResult>> getParseResults() {
-        return parseResults;
+    public List<PageResult> getPages() {
+        return pages;
     }
 
-    public void addResult(List<FieldResult> fieldResults) {
-        parseResults.add(fieldResults);
+    public void addPageResult(PageResult pageResult) {
+        pages.add(pageResult);
     }
 }

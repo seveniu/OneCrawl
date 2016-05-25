@@ -274,7 +274,7 @@ public abstract class HttpUtil {
         String result = HttpUtil.getHttpContent(url, null,
                 Site.me()
                         .setUserAgent(UserAgent.getUserAgent())
-                        .addHeader("Referer", UrlUtil.getHost(url)));
+                        .addHeader("Referer", UrlUtils.getHost(url)));
 
     }
 }

@@ -96,7 +96,7 @@ dependencies {
     compile('com.alibaba:druid:1.0.15')
 
 
-    compile('com.seveniu:Commons:0.0.2.4')
+    compile('com.seveniu:Commons:0.0.2.8')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 

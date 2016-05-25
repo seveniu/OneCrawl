@@ -1,17 +1,17 @@
 package com.seveniu.parse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seveniu.template.def.Field;
 import com.seveniu.template.def.FieldHtmlType;
 import com.seveniu.template.def.Template;
+import com.seveniu.util.HtmlUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.selector.Html;
+import us.codecraft.webmagic.selector.HtmlNode;
+import us.codecraft.webmagic.selector.PlainText;
+import us.codecraft.webmagic.selector.Selectable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by seveniu on 5/12/16.
@@ -70,7 +70,7 @@ public class ParseHtml {
                 case TARGET_LINK:
                     parseLinkLabel(field);
                     break;
-                case TEXT:
+                case HTML_TEXT:
                     parseContent(field);
                     break;
                 case NEXT_LINK:
@@ -78,6 +78,9 @@ public class ParseHtml {
                     break;
                 case TEXT_LINK:
                     parseTextLinkLabel(field);
+                    break;
+                case PURE_TEXT:
+                    parsePureContent(field);
                     break;
                 default:
                     logger.error("field html type is not found : {}", field.getHtmlType());
@@ -89,84 +92,72 @@ public class ParseHtml {
 
 
     /////////////////////////////    parse label    ////////////////////////////
-
-    private void parseContent(Field field) {
+    private Selectable parseBase(Field field) {
         String xpath = field.getXpath();
-        String content = "";
-        if (!(xpath == null || xpath.equals(""))) {
-            content = html.xpath(xpath).get();
-            if (content != null) {
-                try {
-                    List<String> regexes = field.getRegex();
-                    if (regexes != null) {
+        if (xpath != null && xpath.length() > 0) {
+            Selectable selectable = html.xpath(xpath);
+            if (selectable.match()) {
 
-                        String temp = content;
-                        List<String> result = new ArrayList<>();
-                        for (int i = 0; i < regexes.size(); i++) {
-                            String regex = regexes.get(i);
-                            if (regex != null) {
-
-                                Pattern pattern = Pattern.compile(regex);
-                                Matcher m = pattern.matcher(temp);
-                                if (i < regexes.size() - 1) {
-
-                                    if (m.find()) {
-                                        temp = m.group(1);
-                                    } else {
-                                        break;
-                                    }
-                                } else {
-                                    while (m.find()) {
-                                        result.add(m.group(1));
-                                    }
-                                }
-                            }
-                        }
-
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        content = objectMapper.writeValueAsString(result);
+                List<String> regexes = field.getRegex();
+                if (regexes != null && regexes.size() > 0) {
+                    for (String regex : regexes) {
+                        selectable = selectable.regex(regex);
                     }
-                    if (!field.isTrim()) {
-                        content = content.trim();
-                    }
-                } catch (Exception e) {
-                    logger.warn("parse content error : {}", e.getMessage());
-                    if (field.isMust()) {
-                        parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
-                    }
-                    return;
                 }
             } else {
                 if (field.isMust()) {
                     parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
                 }
             }
-        }
-        String defaultValue = field.getDefaultValue();
-        if (defaultValue == null) {
-            defaultValue = "";
-        }
-        if (content == null || content.length() == 0) {
-            content = defaultValue;
+            return selectable;
         }
 
-        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getName(), content));
+        return null;
     }
 
+    private void parseContent(Field field) {
+        Selectable selectable = parseBase(field);
+        if (selectable == null || !selectable.match()) {
+            return;
+        }
+        String content = selectable.get();
+        if (content == null || content.length() == 0) {
+            content = field.getDefaultValue();
+        }
+        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getHtmlType(),field.getName(), content));
+    }
+
+    private void parsePureContent(Field field) {
+        Selectable selectable = parseBase(field);
+        if (selectable == null || !selectable.match()) {
+            return;
+        }
+        String content = selectable.get();
+        content = HtmlUtil.getPlainText(content);
+        if (content == null || content.length() == 0) {
+            content = field.getDefaultValue();
+        }
+        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getHtmlType(), field.getName(), content));
+    }
 
     private void parseLinkLabel(Field field) {
-        String xpath = field.getXpath();
-        List<String> href = html.xpath(xpath + "/@href").all();
+        Selectable selectable = parseBase(field);
+        if (selectable == null) {
+            return;
+        }
+        List<String> href = null;
+        if (selectable instanceof HtmlNode) {
+            href = selectable.links().all();
+        } else if (selectable instanceof PlainText) {
+            href = selectable.all();
+        }
         if (href == null || href.size() == 0) {
             if (field.isMust()) {
                 parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
             }
-        }
-        if (href != null && href.size() > 0) {
-//            List<String> titles = html.xpath(xpath + "/allText()").all();
-            for (int i = 0; i < href.size(); i++) {
-//                String title = titles.get(i).trim();
-                String url = href.get(i).trim();
+        } else {
+            for (String aHref : href) {
+                String url = aHref.trim();
                 if (url.length() > 0) {
                     parseResult.addLink(url);
                 }
@@ -175,6 +166,9 @@ public class ParseHtml {
     }
 
 
+    /**
+     * 不接受 regex 处理
+     */
     private void parseNextLinkLabel(Field field) {
         String xpath = field.getXpath();
         List<String> listUrls = html.xpath(xpath + "/@href").all();
@@ -183,25 +177,28 @@ public class ParseHtml {
             if (field.isMust()) {
                 parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
             }
-        }
-        if (listUrls.size() == 1) {
-            String nextUrl = listUrls.get(0);
-            if (nextUrl.length() > 0) {
-                String nextText = listTexts.get(0);
-                parseResult.addPageLink(nextUrl);
-            }
-        } else if (listUrls.size() > 1) {
-            int index = findNextLink(listTexts);
-            if (index > -1) {
-                String nextUrl = listUrls.get(index);
+        } else {
+
+            if (listUrls.size() == 1) {
+                String nextUrl = listUrls.get(0);
                 if (nextUrl.length() > 0) {
-                    String nextText = listTexts.get(index);
                     parseResult.addPageLink(nextUrl);
+                }
+            } else if (listUrls.size() > 1) {
+                int index = findNextLink(listTexts);
+                if (index > -1) {
+                    String nextUrl = listUrls.get(index);
+                    if (nextUrl.length() > 0) {
+                        parseResult.addPageLink(nextUrl);
+                    }
                 }
             }
         }
     }
 
+    /**
+     * 不接受 regex 处理
+     */
     private void parseTextLinkLabel(Field field) {
         String xpath = field.getXpath();
         List<String> hrefs = html.xpath(xpath + "/@href").all();
@@ -216,7 +213,7 @@ public class ParseHtml {
                 String title = titles.get(i).trim();
                 String url = hrefs.get(i).trim();
                 if (url.length() > 0) {
-                    parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getName(), "[" + title + "](" + url + ")"));
+                    parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getHtmlType(), field.getName(), "[" + title + "](" + url + ")"));
                 }
             }
         }

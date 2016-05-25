@@ -2,9 +2,7 @@ package com.seveniu.util;
 
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Request;
-import us.codecraft.webmagic.Site;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -15,14 +13,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created with IntelliJ IDEA.
- * User: niu
- * Date: 2014/6/19
- * Time: 11:04
- * Project: dhlz-spider
+ * url and html utils.
+ *
+ * @author code4crafter@gmail.com <br>
+ * @since 0.1.0
  */
-public class UrlUtil {
+public class UrlUtils {
 
+    /**
+     * canonicalizeUrl
+     * <br>
+     * Borrowed from Jsoup.
+     *
+     * @param url url
+     * @param refer refer
+     * @return canonicalizeUrl
+     */
     public static String canonicalizeUrl(String url, String refer) {
         URL base;
         try {
@@ -43,6 +49,11 @@ public class UrlUtil {
         }
     }
 
+    /**
+     *
+     * @param url url
+     * @return new url
+     */
     public static String encodeIllegalCharacterInUrl(String url) {
         //TODO more charator support
         return url.replace(" ", "%20");
@@ -98,7 +109,7 @@ public class UrlUtil {
     /**
      * disallow blank space without quote
      */
-    private static Pattern patternForHrefWithoutQuote = Pattern.compile("(<a[^<>]*href=)([^\"'<>\\s]+)", Pattern.CASE_INSENSITIVE);
+    private static Pattern patternForHrefWithoutQuote = Pattern.compile("(<[ ]*?a[^<>]*href=)([^\"'<>\\s]+)", Pattern.CASE_INSENSITIVE);
 
     public static String fixAllRelativeHrefs(String html, String url) {
         html = replaceByPattern(html, url, patternForHrefWithQuote);
@@ -108,25 +119,6 @@ public class UrlUtil {
         html = replaceByPattern(html, url, patternForHrefWithQuoteLink);
         html = replaceByPattern(html, url, patternForHrefWithQuoteIframe);
         return html;
-    }
-
-    public static void main(String[] args) throws IOException {
-        String html = "";
-        html = "<p align=\"center\"><img style=\"border-right-width: 0px; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px\" alt=\"\" oldsrc=\"W020150930595865505888.jpg\" complete=\"complete\" src=\"http://www.sdein.gov.cn/dtxx/tpxw/201509/W020150930595865505888.jpg\" /></p>" + "\n"+
-        "<a href=\"http://bbs.feng.com/aodoo3/click.php?n=a3fe6b10&amp;zoneid=72\" target=\"_blank\"><img src=\"http://bbs.feng.com/aodoo3/view.php?what=zone:72&amp;n=a3fe6b10\" border=\"0\" alt=\"\"></a>" + "\n"+
-
-        "";
-
-        Matcher matcher = patternForHrefWithQuoteImg.matcher(html);
-        while (matcher.find()) {
-            System.out.println(matcher.group(1));
-            System.out.println(canonicalizeUrl(matcher.group(2), "http://www.hawh.cn/whzx/2012-06/18/content_97425.htm"));
-        }
-        String url = "http://www.hawh.cn/whzx/2012-06/04/content_97261.htm";
-        String co = HttpUtil.getHttpContent(url, "utf-8", Site.me());
-        System.out.println(fixAllRelativeHrefs(co, url));
-        System.out.println(fixAllRelativeHrefs(html, "http://www.sdein.gov.cn/dtxx/tpxw/201509/t20150930_285399.html"));
-
     }
 
     public static String replaceByPattern(String html, String url, Pattern pattern) {
@@ -188,17 +180,6 @@ public class UrlUtil {
                 baseUrl = matcher.group(1);
         }
         return baseUrl;
-    }
-
-
-    public static String getExtension(String url) {
-        String temp = url.substring(url.lastIndexOf(".") + 1).trim();
-        Pattern pattern = Pattern.compile("(\\w+)");
-        Matcher m = pattern.matcher(temp);
-        if (m.find()) {
-            return m.group(1);
-        }
-        return "";
     }
 
 }

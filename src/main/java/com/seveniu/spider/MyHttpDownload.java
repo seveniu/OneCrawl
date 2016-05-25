@@ -40,13 +40,21 @@ import java.util.Set;
  * Created by seveniu on 5/15/16.
  * httpDownload
  */
-public class httpDownload extends HttpClientDownloader {
+public class MyHttpDownload extends HttpClientDownloader {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Map<String, CloseableHttpClient> httpClients = new HashMap<String, CloseableHttpClient>();
+    private final Map<String, CloseableHttpClient> httpClients = new HashMap<>();
 
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
+    DownloaderErrorListener errorListener;
+
+    public MyHttpDownload() {
+    }
+
+    public MyHttpDownload(DownloaderErrorListener errorListener) {
+        this.errorListener = errorListener;
+    }
 
     private CloseableHttpClient getHttpClient(Site site) {
         if (site == null) {
@@ -96,7 +104,7 @@ public class httpDownload extends HttpClientDownloader {
                 return page;
             } else {
                 logger.warn("code error " + statusCode + "\t" + request.getUrl());
-                onStatusCodeError(request,task,statusCode);
+                errorListener.onStatusCodeError(request,statusCode);
                 return null;
             }
         } catch (IOException e) {
@@ -105,7 +113,7 @@ public class httpDownload extends HttpClientDownloader {
                 return addToCycleRetry(request, site);
             }
             onError(request);
-            onTimeOutError(request,task);
+            errorListener.onTimeOutError(request);
             return null;
         } finally {
             request.putExtra(Request.STATUS_CODE, statusCode);
@@ -140,7 +148,8 @@ public class httpDownload extends HttpClientDownloader {
                 .setConnectionRequestTimeout(site.getTimeOut())
                 .setSocketTimeout(site.getTimeOut())
                 .setConnectTimeout(site.getTimeOut())
-                .setCookieSpec(CookieSpecs.BEST_MATCH);
+//                .setCookieSpec(CookieSpecs.BEST_MATCH)
+                ;
         if (site.getHttpProxyPool() != null && site.getHttpProxyPool().isEnable()) {
             HttpHost host = site.getHttpProxyFromPool();
             requestConfigBuilder.setProxy(host);
@@ -180,7 +189,7 @@ public class httpDownload extends HttpClientDownloader {
 
     protected Page handleResponse(Request request, String charset, HttpResponse httpResponse, Task task) throws IOException {
         String content = getContent(charset, httpResponse);
-        Page page = new Page();
+        Page page = new MyPage();
         page.setRawText(content);
         page.setUrl(new PlainText(request.getUrl()));
         page.setRequest(request);
@@ -272,14 +281,4 @@ public class httpDownload extends HttpClientDownloader {
 //        return charset;
 //    }
 
-
-    //连接超时错误
-    private void onTimeOutError(Request request, Task task) {
-        ((MySpider) task).httpTimeOutError();
-    }
-
-    // 连接状态码错误
-    private void onStatusCodeError(Request request, Task task, int statusCode) {
-        ((MySpider) task).httpStatusCodeError(statusCode);
-    }
 }

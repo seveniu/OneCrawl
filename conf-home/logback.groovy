@@ -30,11 +30,11 @@ appender("FILE", FileAppender) {
     }
 }
 
-appender("NOIP-FILE", FileAppender) {
-    file = "log/no-ip.log"
+appender("IMAGE_RECORD", FileAppender) {
+    file = "log/image_record.log"
     append = true
     encoder(PatternLayoutEncoder) {
-        pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+        pattern = "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     }
 }
 
@@ -43,3 +43,4 @@ root(ERROR, ["STDOUT"])
 
 logger("com.seveniu",DEBUG,["STDOUT","FILE"],false)
 logger("org.spring",ERROR,["STDOUT"],false)
+logger("us.codecraft.webmagic",DEBUG,["STDOUT"],false)

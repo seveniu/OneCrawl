@@ -7,7 +7,25 @@ import java.util.List;
  * Template
  */
 public class Template {
+    private String name;
+    private String url;
     private List<Field> fields;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public List<Field> getFields() {
         return fields;
@@ -20,7 +38,9 @@ public class Template {
     @Override
     public String toString() {
         return "Template{" +
-                "fields=" + fields +
+                "name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", fields=" + fields +
                 '}';
     }
 }

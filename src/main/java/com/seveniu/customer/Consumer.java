@@ -13,18 +13,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public abstract class Consumer implements Filter, Out {
     private Logger logger = LoggerFactory.getLogger(Consumer.class);
-    private String name;
     private LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
-    public Consumer(String name) {
-        this.name = name;
+    public Consumer() {
         transfer();
     }
 
 
-    public String getName() {
-        return name;
-    }
+    public abstract String getName();
 
 
     private void transfer() {

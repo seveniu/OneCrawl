@@ -20,9 +20,8 @@ import us.codecraft.webmagic.processor.PageProcessor;
  * Created by seveniu on 5/12/16.
  * MyPageProcessor
  */
-public class MyPageProcessor implements PageProcessor {
+public class OneLayerProcessor implements PageProcessor {
     public static final String CONTEXT_NODE = "node";
-    public static final String TASK = "task";
     private static final String SERIAL_NUM = "serialNum";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -30,7 +29,7 @@ public class MyPageProcessor implements PageProcessor {
     private TaskStatistic statistic;
     private Consumer consumer;
 
-    public MyPageProcessor(Consumer consumer, PagesTemplate pagesTemplate, TaskStatistic statistic) {
+    public OneLayerProcessor(Consumer consumer, PagesTemplate pagesTemplate, TaskStatistic statistic) {
         this.consumer = consumer;
         this.pagesTemplate = pagesTemplate;
         this.statistic = statistic;
@@ -49,15 +48,24 @@ public class MyPageProcessor implements PageProcessor {
             serialNum = 0;
             page.getRequest().putExtra(SERIAL_NUM, serialNum);
         }
+        // 根据序号找到对应模板
         Template template = pagesTemplate.getTemplate(serialNum);
         if (template == null) {
+            logger.error("can't find template by serial num : {}", serialNum);
             return;
         }
 
-        //根据序号找到对应模板,解析页面
+        Node contextNode = (Node) page.getRequest().getExtra(CONTEXT_NODE);
+
+        //解析页面
+        long start = System.currentTimeMillis();
         ParseResult parseResult = ParseHtml.parseHtml(url, page.getHtml(), template);
+        logger.debug("parse cost time : {}", System.currentTimeMillis() - start);
         if (parseResult.getParseError() != null) {
             statistic.addParseErrorCount(1);
+            if (contextNode != null) {
+                statistic.addErrorNodeCount(1);
+            }
             logger.warn("parse html error : {}", Json.toJson(parseResult.getParseError()));
             return;
         } else {
@@ -65,23 +73,21 @@ public class MyPageProcessor implements PageProcessor {
         }
 
 
-        Node contextNode = (Node) page.getRequest().getExtra(CONTEXT_NODE);
-        // 处理解析的结果
-        // 内容
-        if (parseResult.getFieldResults() != null && parseResult.getFieldResults().size() > 0) {
-            // 有文本字段,就获取 node 添加内容
-            if (contextNode == null) {
-                contextNode = new Node(url);
-                page.getRequest().putExtra(CONTEXT_NODE, contextNode);
-                statistic.addCreateNodeCount(1);
-            }
-            contextNode.addPageResult(new PageResult(url, parseResult.getFieldResults()));
+        if (serialNum == 0) { // 跳转页面
+            targetPage(page, parseResult);
+        } else if (serialNum == 1) {
+            contentPage(page, parseResult);
         }
 
+    }
+
+    private void targetPage(Page page, ParseResult parseResult) {
+        String url = page.getUrl().get();
+        // 处理解析的结果
         // 下一页链接
         if (parseResult.hasNextPageLinks()) {
             for (String next : parseResult.getNextPageLinks()) {
-                page.addTargetRequest(new Request(next).putExtra(CONTEXT_NODE, contextNode).putExtra(SERIAL_NUM, serialNum));
+                page.addTargetRequest(new Request(next).putExtra(SERIAL_NUM, 0));
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
@@ -90,23 +96,48 @@ public class MyPageProcessor implements PageProcessor {
         // 跳转链接
         if (parseResult.hasLinks()) {
             for (String targetLink : parseResult.getTargetLinks()) {
-                if (contextNode == null && consumer.has(targetLink)) { //
+                if (consumer.has(targetLink)) { //
                     logger.debug("url is repeat : {} ", targetLink);
                     statistic.addRepeatUrlCount(1);
                 } else {
-                    page.addTargetRequest(new Request(targetLink).putExtra(CONTEXT_NODE, contextNode).putExtra(SERIAL_NUM, serialNum + 1));
+                    page.addTargetRequest(new Request(targetLink).putExtra(CONTEXT_NODE, new Node(targetLink)).putExtra(SERIAL_NUM, 1));
                 }
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getTargetLinks().size());
+            statistic.addTargetUrlCount(parseResult.getTargetLinks().size());
+        }
+    }
+
+    private void contentPage(Page page, ParseResult parseResult) {
+        String url = page.getUrl().get();
+        // 处理解析的结果
+        Node contextNode = (Node) page.getRequest().getExtra(CONTEXT_NODE);
+        // 内容
+        if (parseResult.getFieldResults() != null && parseResult.getFieldResults().size() > 0) {
+            // 有文本字段,就获取 node 添加内容
+            if (contextNode == null) {
+                logger.error("context Node is null");
+            } else {
+                statistic.addCreateNodeCount(1);
+                contextNode.addPageResult(new PageResult(url, parseResult.getFieldResults()));
+            }
+        } else {
+            logger.error("content page field is null, url : {}", url);
         }
 
-        // 没有 跳转链接 也没有 下一页链接, 则完成 node
-        if (!parseResult.hasLinks() && !parseResult.hasNextPageLinks()) {
+        // 下一页链接
+        if (parseResult.hasNextPageLinks()) {
+            for (String next : parseResult.getNextPageLinks()) {
+                page.addTargetRequest(new Request(next).putExtra(CONTEXT_NODE, contextNode).putExtra(SERIAL_NUM, 1));
+            }
+            // 统计
+            statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
+        } else {
             statistic.addDoneNodeCount(1);
             page.putField(CONTEXT_NODE, contextNode);
+//            page.putField(TASK, task);
         }
-
     }
 
 

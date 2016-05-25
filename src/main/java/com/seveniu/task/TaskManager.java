@@ -2,12 +2,18 @@ package com.seveniu.task;
 
 import com.seveniu.customer.Consumer;
 import com.seveniu.customer.ConsumerManager;
+import com.seveniu.spider.MySpider;
+import com.seveniu.spider.SpiderFactory;
+import com.seveniu.spider.SpiderType;
+import com.seveniu.spider.imgParse.ImageProcess;
 import com.seveniu.template.PagesTemplate;
 import org.apache.commons.lang3.StringUtils;
+import org.crsh.cli.impl.descriptor.IllegalParameterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import us.codecraft.webmagic.Spider;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,8 +33,8 @@ public class TaskManager {
     @Autowired
     ConsumerManager consumerManager;
 
-    private LinkedBlockingQueue<Task> waitTaskQueue = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<Task> runningTask = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<SpiderTask> waitTaskQueue = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<SpiderTask> runningTask = new LinkedBlockingQueue<>();
     private AtomicInteger curThread = new AtomicInteger(0);
 
     public TaskManager() {
@@ -37,11 +43,16 @@ public class TaskManager {
         StringUtils.isNotEmpty("");
     }
 
-    public void addTask(String consumerName, String templateId, String templates, int thread, String... urls) {
-        addTask(consumerName, templateId, templates, thread, false, urls);
-    }
 
-    public void addTask(String consumerName, String templateId, String templates, int thread, boolean isJS, String... urls) {
+    public void addTask(SpiderType spiderType, String consumerName, String templateId, String templates, SpiderConfig spiderConfig, ImageProcess imageProcess) throws IllegalParameterException {
+        if (hasRun(templateId)) {
+            logger.info("template : {}  has running");
+            return;
+        }
+        if (hasWait(templateId)) {
+            logger.info("template : {}  has wait");
+            return;
+        }
         PagesTemplate pagesTemplate = PagesTemplate.fromJson(templates);
         if (pagesTemplate == null) {
             logger.error("consumer {} 's template {} is error", consumerName, templateId);
@@ -51,10 +62,32 @@ public class TaskManager {
                 logger.warn("consumer {} is not registered", consumerName);
                 return;
             }
-            Task task = new Task(generateTaskId(consumerName, templateId), pagesTemplate, templateId, thread, isJS, consumer, urls);
-            task.getTaskStatistic().addCreateUrlCount(urls.length);
-            waitTaskQueue.add(task);
+
+            String id = generateTaskId(consumerName, templateId);
+            MySpider mySpider = SpiderFactory.getSpider(id, spiderType, spiderConfig, templateId, consumer, pagesTemplate);
+
+            waitTaskQueue.add(mySpider);
         }
+    }
+
+    private boolean hasWait(String templateId) {
+        for (SpiderTask spiderTask : waitTaskQueue) {
+            if (spiderTask.getTemplateId().equals(templateId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean hasRun(String templateId) {
+        for (SpiderTask spiderTask : runningTask) {
+            if (spiderTask.getTemplateId().equals(templateId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void checkTaskStatus() {
@@ -63,12 +96,12 @@ public class TaskManager {
             public void run() {
                 while (true) {
                     try {
-                        Iterator<Task> iterator = runningTask.iterator();
+                        Iterator<SpiderTask> iterator = runningTask.iterator();
                         while (iterator.hasNext()) {
-                            Task task = iterator.next();
-                            if (task.getStatus() == Task.STATUS.STOPPED) {
+                            SpiderTask task = iterator.next();
+                            if (task.getStatus() == Spider.Status.Stopped) {
                                 iterator.remove();
-                                curThread.addAndGet(0 - task.getThreadNum());
+                                curThread.addAndGet(0 - task.spiderConfig().getThreadNum());
                             }
                         }
                         TimeUnit.SECONDS.sleep(5);
@@ -88,11 +121,11 @@ public class TaskManager {
             public void run() {
                 while (true) {
                     try {
-                        Task task = waitTaskQueue.take();
+                        SpiderTask task = waitTaskQueue.take();
                         while (curThread.get() < THREAD_THRESHOLD) {
                             curThread.addAndGet(THREAD_THRESHOLD);
                             runningTask.add(task);
-                            task.startTask();
+                            task.start();
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
