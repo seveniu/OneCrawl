@@ -1,12 +1,11 @@
 package com.seveniu.spider.pipeline;
 
-import com.seveniu.common.json.Json;
 import com.seveniu.node.Node;
 import com.seveniu.parse.FieldResult;
 import com.seveniu.parse.PageResult;
 import com.seveniu.spider.MySpider;
 import com.seveniu.spider.pageProcessor.MyPageProcessor;
-import com.seveniu.template.def.FieldHtmlType;
+import com.seveniu.template.def.FieldType;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
@@ -33,7 +32,7 @@ public class MyPipeLine implements Pipeline {
             if (mySpider.getImageProcess() != null) {
                 for (PageResult pageResult : node.getPages()) {
                     for (FieldResult fieldResult : pageResult.getFieldResults()) {
-                        if (fieldResult.getFieldHtmlType() == FieldHtmlType.HTML_TEXT.getId()) {
+                        if (fieldResult.getFieldHtmlType() == FieldType.HTML_TEXT.getId()) {
                             String result = mySpider.getImageProcess().process(fieldResult.getResult(), mySpider.getSite());
                             fieldResult.setResult(result);
                         }
@@ -42,7 +41,7 @@ public class MyPipeLine implements Pipeline {
             }
 
             // out 输出
-            mySpider.getConsumer().out(Json.toJson(node));
+            mySpider.getConsumer().transfer(node);
         }
     }
 

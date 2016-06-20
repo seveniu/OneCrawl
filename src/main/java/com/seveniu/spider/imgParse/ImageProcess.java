@@ -1,6 +1,5 @@
 package com.seveniu.spider.imgParse;
 
-import com.seveniu.common.ctx.AppContext;
 import com.seveniu.common.encrypt.MD5Util;
 import com.seveniu.spider.imgParse.filter.BloomFilterImpl;
 import com.seveniu.spider.imgParse.filter.ImageRepeatCheck;
@@ -8,6 +7,7 @@ import com.seveniu.spider.imgParse.recorder.ImageLoggerRecorder;
 import com.seveniu.spider.imgParse.recorder.ImageRecorder;
 import com.seveniu.spider.imgParse.storage.ImageFileStorage;
 import com.seveniu.spider.imgParse.storage.ImageStorage;
+import com.seveniu.util.AppContext;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Site;
 
@@ -90,6 +90,9 @@ public class ImageProcess {
                 continue;
             }
             String imageAlt = getAlt(imageTag);
+            if (imageAlt == null) {
+                imageAlt = "";
+            }
 
             Img img = new Img(imageUrl, imageAlt);
             String placeHolder = "[[" + imageUrls.size() + "]]";
@@ -140,7 +143,7 @@ public class ImageProcess {
                 originName = getName(img.url);
             }
 
-            String md5 = MD5Util.getMD5(bytes);
+            String md5 = MD5Util.md5(bytes);
             if (imageRepeatCheck.contain(md5)) {
                 imageRecorder.record(img.url, originName, extension, md5);
             } else {

@@ -1,7 +1,7 @@
 package com.seveniu.parse;
 
 import com.seveniu.template.def.Field;
-import com.seveniu.template.def.FieldHtmlType;
+import com.seveniu.template.def.FieldType;
 import com.seveniu.template.def.Template;
 import com.seveniu.util.HtmlUtil;
 import org.slf4j.Logger;
@@ -61,9 +61,9 @@ public class ParseHtml {
             if (parseResult.getParseError() != null) {
                 break;
             }
-            FieldHtmlType type = FieldHtmlType.getType(field.getHtmlType());
+            FieldType type = FieldType.getType(field.getType());
             if (type == null) {
-                logger.error("field html type is not found : {}", field.getHtmlType());
+                logger.error("field html type is not found : {}", field.getType());
                 return parseResult;
             }
             switch (type) {
@@ -83,7 +83,7 @@ public class ParseHtml {
                     parsePureContent(field);
                     break;
                 default:
-                    logger.error("field html type is not found : {}", field.getHtmlType());
+                    logger.error("field html type is not found : {}", field.getType());
                     return null;
             }
         }
@@ -124,7 +124,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getHtmlType(),field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(),field.getName(), content));
     }
 
     private void parsePureContent(Field field) {
@@ -137,7 +137,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getHtmlType(), field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getType(), field.getName(), content));
     }
 
     private void parseLinkLabel(Field field) {
@@ -201,20 +201,22 @@ public class ParseHtml {
      */
     private void parseTextLinkLabel(Field field) {
         String xpath = field.getXpath();
-        List<String> hrefs = html.xpath(xpath + "/@href").all();
-        if (hrefs == null || hrefs.size() == 0) {
+        Selectable selectable = html.xpath(xpath);
+        if(selectable != null && selectable.match()) {
+            List<String> hrefs = selectable.xpath("//a/@href").all();
+            if (hrefs != null && hrefs.size() > 0) {
+                List<String> titles = selectable.xpath("//a/allText()").all();
+                for (int i = 0; i < titles.size(); i++) {
+                    String title = titles.get(i).trim();
+                    String url = hrefs.get(i).trim();
+                    if (url.length() > 0) {
+                        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getType(), field.getName(), "[" + title + "](" + url + ")"));
+                    }
+                }
+            }
+        } else {
             if (field.isMust()) {
                 parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
-            }
-        }
-        if (hrefs != null && hrefs.size() > 0) {
-            List<String> titles = html.xpath(xpath + "/allText()").all();
-            for (int i = 0; i < titles.size(); i++) {
-                String title = titles.get(i).trim();
-                String url = hrefs.get(i).trim();
-                if (url.length() > 0) {
-                    parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getHtmlType(), field.getName(), "[" + title + "](" + url + ")"));
-                }
             }
         }
     }
@@ -257,7 +259,7 @@ public class ParseHtml {
 //        List<String> errorLabel = new ArrayList<>();
 //        for (Field label : labels) {
 //            if (label.isMust()) {
-//                if (label.getHtmlType() == Field.NEXT_LINK)
+//                if (label.getType() == Field.NEXT_LINK)
 //                    continue;
 //                if (label.getValue() == null) {
 //                    System.out.println("label parse error : " + label.getText() + " xpath 错误");

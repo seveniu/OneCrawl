@@ -67,6 +67,13 @@ dependencies {
     // Spring Boot 对这些运维相关的功能进行了整合，形成了一个功能完备和可定制的功能集，称之为 Actuator。
     compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
 
+    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}")
+    compile('org.apache.commons:commons-pool2:2.4.2')
+
 
     println "${profile} compile actuator"
     if (profile != "stable") {
@@ -94,9 +101,11 @@ dependencies {
     }
     compile('com.google.guava:guava:18.0')
     compile('com.alibaba:druid:1.0.15')
+    compile('org.apache.thrift:libthrift:0.9.3')
+    compile('commons-validator:commons-validator:1.4.0')
 
 
-    compile('com.seveniu:Commons:0.0.2.8')
+    compile('com.seveniu:Commons:0.0.10')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 
@@ -129,7 +138,7 @@ task wrapper(type: Wrapper) {
 }
 
 
-mainClassName="com.seveniu.Application"
+mainClassName="com.seveniu.AppCrawl"
 bootRun {
     // 从 gradle.properties 中读取
     String springProfile = System.getProperty("spring.profiles.active")

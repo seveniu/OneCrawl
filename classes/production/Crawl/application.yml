@@ -10,6 +10,11 @@
 #    jsp-servlet.registered: true # Whether or not the JSP servlet is registered
 #    servlet-path:  # the servlet path, defaults to '/'
 #    display-name: xxx # the display name of the application
+server:
+    port: 20001
+    session:
+        cookie:
+            name: CRAWLSESSION
 
 #spring.view.prefix: templates
 
@@ -21,7 +26,7 @@ shell:
                 name: donopo
                 password: 123
     ssh:
-        port: 8965
+        port: 20002
 #    command-path-patterns: classpath*:/cmd/** #defalut /commands/**,/crash/commands/**
 
 

@@ -1,6 +1,6 @@
 package com.seveniu.spider.imgParse;
 
-import com.seveniu.common.ctx.AppContext;
+import com.seveniu.util.AppContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -10,9 +10,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Site;
-import us.codecraft.webmagic.downloader.HttpClientGenerator;
 
 import java.io.IOException;
 import java.io.InputStream;

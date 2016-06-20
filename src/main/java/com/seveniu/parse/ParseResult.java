@@ -93,4 +93,8 @@ public class ParseResult {
     public boolean hasNextPageLinks() {
         return nextPageLinks != null && nextPageLinks.size() > 0;
     }
+
+    public boolean hasError() {
+        return parseError != null;
+    }
 }

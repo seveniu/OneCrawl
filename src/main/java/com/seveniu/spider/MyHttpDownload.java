@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -30,6 +29,7 @@ import us.codecraft.webmagic.utils.HttpConstant;
 import us.codecraft.webmagic.utils.UrlUtils;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,6 +107,9 @@ public class MyHttpDownload extends HttpClientDownloader {
                 errorListener.onStatusCodeError(request,statusCode);
                 return null;
             }
+        } catch (ConnectException e) {
+            logger.warn("download page " + request.getUrl() + " connect error", e);
+            return null;
         } catch (IOException e) {
             logger.warn("download page " + request.getUrl() + " error", e);
             if (site.getCycleRetryTimes() > 0) {

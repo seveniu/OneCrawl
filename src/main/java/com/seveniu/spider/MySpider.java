@@ -1,20 +1,22 @@
 package com.seveniu.spider;
 
-import com.seveniu.customer.Consumer;
+import com.seveniu.consumer.Consumer;
+import com.seveniu.consumer.TaskInfo;
 import com.seveniu.spider.imgParse.ImageProcess;
+import com.seveniu.spider.pageProcessor.MyPageProcessor;
 import com.seveniu.spider.pipeline.MyPipeLine;
-import com.seveniu.task.SpiderConfig;
 import com.seveniu.task.SpiderTask;
 import com.seveniu.task.TaskStatistic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.pipeline.Pipeline;
-import us.codecraft.webmagic.processor.PageProcessor;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -24,18 +26,18 @@ import java.util.Date;
 public class MySpider extends Spider implements SpiderTask {
 
     private Logger logger = LoggerFactory.getLogger(MySpider.class);
-    private SpiderConfig spiderConfig;
+    private TaskInfo spiderConfig;
     private Date createTime = new Date();
     private Date startTime;
     private Date end;
     private TaskStatistic taskStatistic;
-    private SpiderType spiderType;
+    private TemplateType templateType;
     private Consumer consumer;
     private String templateId;
     private ImageProcess imageProcess;
 
 
-    MySpider(String id, SpiderConfig config, String templateId, Consumer consumer, PageProcessor pageProcessor, TaskStatistic taskStatistic) {
+    MySpider(String id, TaskInfo config, Consumer consumer, MyPageProcessor pageProcessor, TaskStatistic taskStatistic) {
         super(pageProcessor);
         this.createTime = new Date();
 
@@ -46,34 +48,52 @@ public class MySpider extends Spider implements SpiderTask {
 
         this.taskStatistic = taskStatistic;
         this.consumer = consumer;
-        this.templateId = templateId;
+        this.templateId = config.getTemplateId();
         setConfig(config);
         this.imageProcess = ImageProcess.get();
+        pageProcessor.setMySpider(this);
     }
 
 
-    private void setConfig(SpiderConfig config) {
+    private void setConfig(TaskInfo config) {
         this.spiderConfig = config;
         this.threadNum = config.getThreadNum();
-        this.addUrl(config.getUrls());
+        this.setExecutorService(getExecutor(threadNum));
+        config.getUrls().forEach(this::addUrl);
+    }
+
+    private ExecutorService getExecutor(int nThreads) {
+        return new ThreadPoolExecutor(nThreads, nThreads,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                new ThreadFactory() {
+                    AtomicInteger count = new AtomicInteger(0);
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r,"spider-"+getId()+"-crawl-" + count.getAndIncrement());
+                    }
+                });
     }
 
 
     /**
      * 开始执行
      */
-    public void start() {
-        this.startTime = new Date();
-        this.runAsync();
+    @Override
+    public void run() {
+        this.taskStatistic.setStartTime(new Date());
+        logger.info("spider start : {}  " , getId());
+        super.run();
+        logger.info("spider end : {}  " , getId());
     }
 
     /**
      * 主动关闭 用这个借口
      * 不用 stop() 以及 close()
      */
-    public void stopSpider() {
-        logger.info("set spider stop");
-        stop();
+    public void stop() {
+        logger.info("stop spider {} ", uuid);
+        super.stop();
     }
 
     @Override
@@ -87,18 +107,17 @@ public class MySpider extends Spider implements SpiderTask {
         }
         threadPool.shutdown();
 
+        this.taskStatistic.setEndTime(new Date());
+        consumer.statistic(taskStatistic);
+        consumer.getTaskManager().removerStopSpider(this);
         logger.info("spider stopped    :  {}", toString());
     }
 
     @Override
-    public SpiderConfig spiderConfig() {
+    public TaskInfo spiderConfig() {
         return this.spiderConfig;
     }
 
-    @Override
-    public String getTemplateId() {
-        return this.templateId;
-    }
 
     private void destroyEach(Object object) {
         if (object instanceof Closeable) {
@@ -114,8 +133,16 @@ public class MySpider extends Spider implements SpiderTask {
         return uuid;
     }
 
+    public TaskInfo getSpiderConfig() {
+        return spiderConfig;
+    }
+
     public Consumer getConsumer() {
         return consumer;
+    }
+
+    public TaskStatistic getTaskStatistic() {
+        return taskStatistic;
     }
 
     public ImageProcess getImageProcess() {
@@ -131,7 +158,7 @@ public class MySpider extends Spider implements SpiderTask {
                 ", startTime=" + startTime +
                 ", end=" + end +
                 ", taskStatistic=" + taskStatistic +
-                ", spiderType=" + spiderType +
+                ", spiderType=" + templateType +
                 '}';
     }
 }

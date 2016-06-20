@@ -11,10 +11,12 @@ import java.util.List;
  */
 public class Node {
     private String url;
+    private String taskId;
     private List<PageResult> pages = new ArrayList<>();
 
-    public Node(String url) {
+    public Node(String url,String taskId) {
         this.url = url;
+        this.taskId = taskId;
     }
 
     public String getUrl() {
@@ -23,6 +25,10 @@ public class Node {
 
     public List<PageResult> getPages() {
         return pages;
+    }
+
+    public String getTaskId() {
+        return taskId;
     }
 
     public void addPageResult(PageResult pageResult) {

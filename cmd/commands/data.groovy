@@ -1,6 +1,6 @@
 package commands
 
-import com.seveniu.Application
+import com.seveniu.AppCrawl
 import com.seveniu.conf.DBConf
 import groovy.sql.Sql
 import org.crsh.cli.Argument
@@ -34,7 +34,7 @@ class data {
 //            }
 //        });
 //        println(name)
-        DBConf dbConf = Application.ctx.getBean(DBConf)
+        DBConf dbConf = AppCrawl.ctx.getBean(DBConf)
         println(dbConf.driver)
         def session = Sql.newInstance(dbConf.url,dbConf.username,dbConf.password,dbConf.driver)
 //        jdbcTemplate.query(sql,{rs,rowNum -> println(rs)})

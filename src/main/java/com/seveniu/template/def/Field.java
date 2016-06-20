@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class Field {
 
-    private int htmlType;
+    private int type;
     private int contentType;
     private String name;
 
@@ -28,12 +28,12 @@ public class Field {
     private List<String> regex;
     private boolean must;
 
-    public int getHtmlType() {
-        return htmlType;
+    public int getType() {
+        return type;
     }
 
-    public void setHtmlType(int htmlType) {
-        this.htmlType = htmlType;
+    public void setType(int type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -91,7 +91,7 @@ public class Field {
     @Override
     public String toString() {
         return "Field{" +
-                "htmlType=" + htmlType +
+                "type=" + type +
                 ", contentType=" + contentType +
                 ", name='" + name + '\'' +
                 ", defaultValue='" + defaultValue + '\'' +
@@ -127,7 +127,7 @@ public class Field {
             JsonNode node = jp.getCodec().readTree(jp);
 
             JsonNode htmlType = node.get("type");
-            field.setHtmlType(htmlType.intValue());
+            field.setType(htmlType.intValue());
 
             JsonNode contentType = node.get("id");
             field.setContentType(contentType.intValue());
