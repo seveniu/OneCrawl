@@ -12,8 +12,8 @@ public class ParseResult {
     private String url;
     private ParseError parseError;
     private List<FieldResult> fieldResults;
-    private List<String> nextPageLinks;
-    private List<String> targetLinks;
+    private List<Link> nextPageLinks;
+    private List<Link> targetLinks;
 
     public ParseResult(String url) {
         this.url = url;
@@ -44,22 +44,22 @@ public class ParseResult {
         this.fieldResults = fieldResults;
     }
 
-    public List<String> getTargetLinks() {
-        return targetLinks;
-    }
 
-    public void setTargetLinks(List<String> targetLinks) {
-        this.targetLinks = targetLinks;
-    }
-
-    public List<String> getNextPageLinks() {
+    public List<Link> getNextPageLinks() {
         return nextPageLinks;
     }
 
-    public void setNextPageLinks(List<String> nextPageLinks) {
+    public void setNextPageLinks(List<Link> nextPageLinks) {
         this.nextPageLinks = nextPageLinks;
     }
 
+    public List<Link> getTargetLinks() {
+        return targetLinks;
+    }
+
+    public void setTargetLinks(List<Link> targetLinks) {
+        this.targetLinks = targetLinks;
+    }
 
     public void addFieldResult(FieldResult fieldResult) {
         if (fieldResults == null) {
@@ -68,22 +68,33 @@ public class ParseResult {
         fieldResults.add(fieldResult);
     }
 
-    public void addLink(String link) {
+    public void addLink(Link linkFieldResult) {
         if (targetLinks == null) {
             targetLinks = new ArrayList<>();
         }
-        targetLinks.add(link);
+        targetLinks.add(linkFieldResult);
     }
 
-    public void addPageLink(String link) {
+    public void addPageLink(Link linkFieldResult) {
         if (nextPageLinks == null) {
             nextPageLinks = new ArrayList<>();
         }
-        this.nextPageLinks.add(link);
+        this.nextPageLinks.add(linkFieldResult);
     }
 
     public boolean hasFieldResults() {
         return fieldResults != null && fieldResults.size() > 0;
+    }
+
+    public boolean isMatchField() {
+        if (fieldResults != null && fieldResults.size() > 0) {
+            return true;
+        } else if (targetLinks != null && targetLinks.size() > 0) {
+            return true;
+        } else if (nextPageLinks != null && nextPageLinks.size() > 0) {
+            return true;
+        }
+        return false;
     }
 
     public boolean hasLinks() {

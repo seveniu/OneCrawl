@@ -1,12 +1,11 @@
 package com.seveniu.spider;
 
-import com.seveniu.consumer.Consumer;
-import com.seveniu.consumer.TaskInfo;
 import com.seveniu.spider.imgParse.ImageProcess;
 import com.seveniu.spider.pageProcessor.MyPageProcessor;
 import com.seveniu.spider.pipeline.MyPipeLine;
 import com.seveniu.task.SpiderTask;
 import com.seveniu.task.TaskStatistic;
+import com.seveniu.thriftServer.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Spider;
@@ -32,22 +31,20 @@ public class MySpider extends Spider implements SpiderTask {
     private Date end;
     private TaskStatistic taskStatistic;
     private TemplateType templateType;
-    private Consumer consumer;
     private String templateId;
     private ImageProcess imageProcess;
 
 
-    MySpider(String id, TaskInfo config, Consumer consumer, MyPageProcessor pageProcessor, TaskStatistic taskStatistic) {
+    MySpider(String id, TaskInfo config, MyPipeLine myPipeLine, MyPageProcessor pageProcessor, TaskStatistic taskStatistic) {
         super(pageProcessor);
         this.createTime = new Date();
 
         this.uuid = id;
 
         this.setDownloader(new MyHttpDownload(taskStatistic));
-        this.pipelines.add(new MyPipeLine());
+        this.pipelines.add(myPipeLine);
 
         this.taskStatistic = taskStatistic;
-        this.consumer = consumer;
         this.templateId = config.getTemplateId();
         setConfig(config);
         this.imageProcess = ImageProcess.get();
@@ -68,9 +65,10 @@ public class MySpider extends Spider implements SpiderTask {
                 new LinkedBlockingQueue<>(),
                 new ThreadFactory() {
                     AtomicInteger count = new AtomicInteger(0);
+
                     @Override
                     public Thread newThread(Runnable r) {
-                        return new Thread(r,"spider-"+getId()+"-crawl-" + count.getAndIncrement());
+                        return new Thread(r, "spider-" + getId() + "-crawl-" + count.getAndIncrement());
                     }
                 });
     }
@@ -82,9 +80,9 @@ public class MySpider extends Spider implements SpiderTask {
     @Override
     public void run() {
         this.taskStatistic.setStartTime(new Date());
-        logger.info("spider start : {}  " , getId());
+        logger.info("spider start : {}  ", getId());
         super.run();
-        logger.info("spider end : {}  " , getId());
+        logger.info("spider end : {}  ", getId());
     }
 
     /**
@@ -108,13 +106,12 @@ public class MySpider extends Spider implements SpiderTask {
         threadPool.shutdown();
 
         this.taskStatistic.setEndTime(new Date());
-        consumer.statistic(taskStatistic);
-        consumer.getTaskManager().removerStopSpider(this);
+
         logger.info("spider stopped    :  {}", toString());
     }
 
     @Override
-    public TaskInfo spiderConfig() {
+    public TaskInfo taskInfo() {
         return this.spiderConfig;
     }
 
@@ -137,10 +134,6 @@ public class MySpider extends Spider implements SpiderTask {
         return spiderConfig;
     }
 
-    public Consumer getConsumer() {
-        return consumer;
-    }
-
     public TaskStatistic getTaskStatistic() {
         return taskStatistic;
     }
@@ -152,7 +145,7 @@ public class MySpider extends Spider implements SpiderTask {
     @Override
     public String toString() {
         return "MySpider{" +
-                "spiderConfig=" + spiderConfig +
+                "taskInfo=" + spiderConfig +
                 ", id='" + uuid + '\'' +
                 ", createTime=" + createTime +
                 ", startTime=" + startTime +

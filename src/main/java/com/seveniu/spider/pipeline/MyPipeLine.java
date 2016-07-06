@@ -1,5 +1,6 @@
 package com.seveniu.spider.pipeline;
 
+import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
 import com.seveniu.parse.FieldResult;
 import com.seveniu.parse.PageResult;
@@ -19,6 +20,11 @@ import us.codecraft.webmagic.pipeline.Pipeline;
  */
 public class MyPipeLine implements Pipeline {
 
+    private Consumer consumer;
+
+    public MyPipeLine(Consumer consumer) {
+        this.consumer = consumer;
+    }
 
     @Override
     public void process(ResultItems resultItems, Task task) {
@@ -41,7 +47,7 @@ public class MyPipeLine implements Pipeline {
             }
 
             // out 输出
-            mySpider.getConsumer().transfer(node);
+            consumer.transfer(node);
         }
     }
 

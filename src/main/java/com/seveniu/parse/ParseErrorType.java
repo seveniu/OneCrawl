@@ -6,7 +6,8 @@ package com.seveniu.parse;
  */
 public enum ParseErrorType {
 
-    NOT_FOUND_XPATH("can't find xpath");
+    NOT_FOUND_XPATH("can't find xpath"),
+    NO_FIELD_MATCH("no field match");
 
     private String describe;
 

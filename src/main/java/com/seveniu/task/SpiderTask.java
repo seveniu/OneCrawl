@@ -1,6 +1,6 @@
 package com.seveniu.task;
 
-import com.seveniu.consumer.TaskInfo;
+import com.seveniu.thriftServer.TaskInfo;
 import us.codecraft.webmagic.Spider;
 
 /**
@@ -14,7 +14,7 @@ public interface SpiderTask extends Runnable {
 
     void stop();
 
-    TaskInfo spiderConfig();
+    TaskInfo taskInfo();
 
     String getId();
 

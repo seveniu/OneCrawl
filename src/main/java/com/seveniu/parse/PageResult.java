@@ -8,27 +8,33 @@ import java.util.List;
  * PageResult
  */
 public class PageResult {
-    private List<FieldResult> fieldResults = new ArrayList<>();
+    private List<FieldResult> fieldResults;
     private String url;
 
-    public PageResult(String url, List<FieldResult> fieldResults) {
-        this.fieldResults = fieldResults;
-        this.url = url;
-    }
 
     public List<FieldResult> getFieldResults() {
         return fieldResults;
     }
 
-    public void setFieldResults(List<FieldResult> fieldResults) {
+    public PageResult setFieldResults(List<FieldResult> fieldResults) {
         this.fieldResults = fieldResults;
+        return this;
+    }
+
+    public void addFieldResult(FieldResult fieldResult) {
+        if(this.fieldResults == null) {
+            this.fieldResults = new ArrayList<>();
+        }
+        this.fieldResults.add(fieldResult);
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public PageResult setUrl(String url) {
         this.url = url;
+        return this;
     }
+
 }

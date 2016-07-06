@@ -11,6 +11,7 @@ import us.codecraft.webmagic.selector.HtmlNode;
 import us.codecraft.webmagic.selector.PlainText;
 import us.codecraft.webmagic.selector.Selectable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,6 +88,9 @@ public class ParseHtml {
                     return null;
             }
         }
+        if (!parseResult.hasError() && !parseResult.isMatchField()) {
+            parseResult.setParseError(new ParseError(null, ParseErrorType.NO_FIELD_MATCH));
+        }
         return parseResult;
     }
 
@@ -124,7 +128,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(),field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), content));
     }
 
     private void parsePureContent(Field field) {
@@ -137,7 +141,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getType(), field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), content));
     }
 
     private void parseLinkLabel(Field field) {
@@ -145,21 +149,30 @@ public class ParseHtml {
         if (selectable == null) {
             return;
         }
-        List<String> href = null;
+        List<String> hrefs = null;
+        List<String> texts = null;
         if (selectable instanceof HtmlNode) {
-            href = selectable.links().all();
+            hrefs = selectable.links().all();
+            texts = selectable.xpath("/text()").all();
         } else if (selectable instanceof PlainText) {
-            href = selectable.all();
+            hrefs = selectable.all();
         }
-        if (href == null || href.size() == 0) {
+        if (hrefs == null || hrefs.size() == 0) {
             if (field.isMust()) {
                 parseResult.setParseError(new ParseError(field, ParseErrorType.NOT_FOUND_XPATH));
             }
         } else {
-            for (String aHref : href) {
-                String url = aHref.trim();
-                if (url.length() > 0) {
-                    parseResult.addLink(url);
+            for (int i = 0; i < hrefs.size(); i++) {
+                String href = hrefs.get(i).trim();
+                String text = "";
+                if (texts != null) {
+                    try {
+                        text = texts.get(i);
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (href.length() > 0) {
+                    parseResult.addLink(new Link(text, href));
                 }
             }
         }
@@ -182,14 +195,14 @@ public class ParseHtml {
             if (listUrls.size() == 1) {
                 String nextUrl = listUrls.get(0);
                 if (nextUrl.length() > 0) {
-                    parseResult.addPageLink(nextUrl);
+                    parseResult.addPageLink(new Link(listTexts.get(0), nextUrl));
                 }
             } else if (listUrls.size() > 1) {
                 int index = findNextLink(listTexts);
                 if (index > -1) {
                     String nextUrl = listUrls.get(index);
                     if (nextUrl.length() > 0) {
-                        parseResult.addPageLink(nextUrl);
+                        parseResult.addPageLink(new Link(listTexts.get(index), nextUrl));
                     }
                 }
             }
@@ -202,17 +215,19 @@ public class ParseHtml {
     private void parseTextLinkLabel(Field field) {
         String xpath = field.getXpath();
         Selectable selectable = html.xpath(xpath);
-        if(selectable != null && selectable.match()) {
+        if (selectable != null && selectable.match()) {
             List<String> hrefs = selectable.xpath("//a/@href").all();
             if (hrefs != null && hrefs.size() > 0) {
                 List<String> titles = selectable.xpath("//a/allText()").all();
+                List<Link> links = new ArrayList<>(titles.size());
                 for (int i = 0; i < titles.size(); i++) {
                     String title = titles.get(i).trim();
                     String url = hrefs.get(i).trim();
                     if (url.length() > 0) {
-                        parseResult.addFieldResult(new FieldResult(field.getContentType(),field.getType(), field.getName(), "[" + title + "](" + url + ")"));
+                        links.add(new Link(title, url));
                     }
                 }
+                parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), links));
             }
         } else {
             if (field.isMust()) {

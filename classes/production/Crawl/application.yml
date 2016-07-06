@@ -36,12 +36,15 @@ hello: hello
 ---
 spring:
     profiles: home
+thriftServerPort: 20003
 hello: hello-home
 
 ---
 spring:
     profiles: dev
+thriftServerPort: 20003
 
 ---
 spring:
     profiles: stable
+thriftServerPort: 20003

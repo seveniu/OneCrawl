@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.seveniu.spider.pageProcessor.multipleListContentProcessor.CONTEXT_NODE;
+import static com.seveniu.spider.pageProcessor.MultiListContentProcessor.CONTEXT_NODE;
 
 /**
  * Created by seveniu on 5/15/16.

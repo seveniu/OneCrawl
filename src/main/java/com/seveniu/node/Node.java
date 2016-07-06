@@ -31,7 +31,7 @@ public class Node {
         return taskId;
     }
 
-    public void addPageResult(PageResult pageResult) {
+    public synchronized void addPageResult(PageResult pageResult) {
         pages.add(pageResult);
     }
 }

@@ -4,7 +4,6 @@ import com.seveniu.AppCrawl;
 import com.seveniu.consumer.ConsumerManager;
 import com.seveniu.consumer.DefaultConsumer;
 import com.seveniu.consumer.TaskInfo;
-import com.seveniu.spider.TemplateType;
 import com.seveniu.template.PagesTemplate;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,11 +66,6 @@ public class TaskInfoManagerTest {
                 return true;
             }
             return false;
-        }
-
-        @Override
-        public List<TaskInfo> receiveTasks() {
-            return null;
         }
 
     }

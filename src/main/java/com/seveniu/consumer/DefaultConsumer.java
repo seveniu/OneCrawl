@@ -1,6 +1,7 @@
 package com.seveniu.consumer;
 
 import com.seveniu.common.json.Json;
+import com.seveniu.consumer.remote.thrift.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
 import org.slf4j.Logger;
@@ -28,18 +29,18 @@ public class DefaultConsumer extends Consumer {
     }
 
     @Override
-    public void out(Node result) {
+    public void done(Node result) {
         logger.info(Json.toJson(result));
-    }
-
-    @Override
-    public List<TaskInfo> receiveTasks() {
-        return null;
     }
 
     @Override
     public void statistic(TaskStatistic statistic) {
         logger.info(Json.toJson(statistic));
+    }
+
+    @Override
+    public void taskStatusChange(String taskId, TaskStatus taskStatus) {
+
     }
 
     @Override

@@ -3,20 +3,23 @@ package com.seveniu.consumer;
 import com.seveniu.common.tools.ShutdownHook;
 import com.seveniu.common.tools.ShutdownHookManager;
 import com.seveniu.node.Node;
-import com.seveniu.task.TaskStatistic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by seveniu on 5/13/16.
  * Consumer
  */
-public abstract class Consumer implements ShutdownHook {
+public abstract class Consumer implements ConsumerInter, ShutdownHook {
     protected Logger logger;
 
+    private String uuid;
     private String name;
 
     private ConsumerTaskManager taskManager;
@@ -27,22 +30,20 @@ public abstract class Consumer implements ShutdownHook {
 
     public Consumer(String name) {
         this.name = name;
+        this.uuid = UUID.randomUUID().toString();
 //        this.logger = LoggerFactory.getLogger(this.getClass() + "-" + name);
         this.logger = LoggerFactory.getLogger(this.getClass());
     }
 
 
+    public String getUuid() {
+        return uuid;
+    }
+
     public String getName() {
         return name;
     }
 
-    public abstract boolean has(String url);
-
-    public abstract void out(Node node);
-
-    public abstract List<TaskInfo> receiveTasks();
-
-    public abstract void statistic(TaskStatistic taskStatistic);
 
     public ConsumerTaskManager getTaskManager() {
         return taskManager;
@@ -68,7 +69,7 @@ public abstract class Consumer implements ShutdownHook {
             if (Thread.currentThread().isInterrupted()) {
                 return;
             }
-            out(node);
+            done(node);
         });
     }
 

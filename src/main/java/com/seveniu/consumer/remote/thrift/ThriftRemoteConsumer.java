@@ -2,20 +2,16 @@ package com.seveniu.consumer.remote.thrift;
 
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.Consumer;
-import com.seveniu.consumer.TaskInfo;
-import com.seveniu.consumer.remote.RemoteConsumerConfig;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
-import com.seveniu.util.ReconnectThriftClient;
+import com.seveniu.thriftServer.ConsumerConfig;
 import com.seveniu.util.TServiceClientBeanProxyFactory;
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by seveniu on 5/24/16.
@@ -23,11 +19,11 @@ import java.util.List;
  */
 public class ThriftRemoteConsumer extends Consumer {
 
-    private RemoteConsumerConfig remoteConsumerConfig;
+    private ConsumerConfig remoteConsumerConfig;
 
     private ConsumerThrift.Iface thriftClient;
 
-    public ThriftRemoteConsumer(RemoteConsumerConfig config) throws TTransportException {
+    public ThriftRemoteConsumer(ConsumerConfig config) throws TTransportException {
         super(config.getName());
         this.remoteConsumerConfig = config;
         this.build(config.getHost(),config.getPort());
@@ -70,37 +66,20 @@ public class ThriftRemoteConsumer extends Consumer {
         try {
             return thriftClient.has(url);
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warn("url check warn : {}", e.getMessage());
             return false;
         }
     }
 
     @Override
-    public List<TaskInfo> receiveTasks() {
-        List<Task> tasks;
-        try {
-            tasks = thriftClient.getTasks();
-            List<TaskInfo> taskInfos = new ArrayList<>();
-            for (Task task : tasks) {
-                TaskInfo taskInfo = new TaskInfo(String.valueOf(task.getId()), task.getName(),
-                        task.getUrls(), String.valueOf(task.getTemplateId()), task.getTemplateType(), task.getTemplate(),
-                        task.getThreadNum(), task.getProxy(), task.getJavascript());
-                taskInfos.add(taskInfo);
-            }
-            return taskInfos;
-        } catch (Exception e) {
-            logger.warn("get task info warn : {}", e.getMessage());
-            return null;
-        }
-    }
-
-    @Override
-    public void out(Node node) {
+    public void done(Node node) {
         String data = Json.toJson(node);
         try {
             thriftClient.done(data);
         } catch (Exception e) {
-            logger.warn("consumer out warn : {}", e.getMessage());
+            e.printStackTrace();
+            logger.warn("consumer done warn : {}", e.getMessage());
         }
     }
 
@@ -109,7 +88,18 @@ public class ThriftRemoteConsumer extends Consumer {
         try {
             thriftClient.statistic(Json.toJson(statistic));
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warn("get task statistic warn : {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public void taskStatusChange(String taskId, TaskStatus taskStatus) {
+        try {
+            thriftClient.taskStatusChange(taskId,taskStatus);
+        } catch (TException e) {
+            logger.warn("get task status change error : {}", e.getMessage());
+            e.printStackTrace();
         }
     }
 

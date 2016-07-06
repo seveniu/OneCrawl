@@ -1,11 +1,11 @@
 package com.seveniu.consumer.remote;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.Consumer;
-import com.seveniu.consumer.TaskInfo;
+import com.seveniu.consumer.remote.thrift.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
+import com.seveniu.thriftServer.ConsumerConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -16,8 +16,6 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by seveniu on 5/24/16.
@@ -25,11 +23,11 @@ import java.util.List;
  */
 public class HttpRemoteConsumer extends Consumer {
 
-    private RemoteConsumerConfig remoteConsumerConfig;
+    private ConsumerConfig remoteConsumerConfig;
 
     private RemoteRequest remoteRequest;
 
-    public HttpRemoteConsumer(RemoteConsumerConfig remoteConsumerConfig) {
+    public HttpRemoteConsumer(ConsumerConfig remoteConsumerConfig) {
         super(remoteConsumerConfig.getName());
         this.remoteConsumerConfig = remoteConsumerConfig;
         this.remoteRequest = new RemoteRequest();
@@ -44,21 +42,13 @@ public class HttpRemoteConsumer extends Consumer {
     }
 
     @Override
-    public void out(Node node) {
+    public void done(Node node) {
         if (status == STATUS.STOP) {
             return;
         }
         remoteRequest.send(remoteConsumerConfig.getDoneUrl(), Json.toJson(node));
     }
 
-    @Override
-    public List<TaskInfo> receiveTasks() {
-        if (status == STATUS.STOP) {
-            return new ArrayList<>(0);
-        }
-        return Json.toObject(remoteRequest.send(remoteConsumerConfig.getTaskUrl(), null), new TypeReference<List<TaskInfo>>() {
-        });
-    }
 
     @Override
     public void statistic(TaskStatistic statistic) {
@@ -66,6 +56,11 @@ public class HttpRemoteConsumer extends Consumer {
             return;
         }
         remoteRequest.send(remoteConsumerConfig.getStatisticUrl(), Json.toJson(statistic));
+    }
+
+    @Override
+    public void taskStatusChange(String taskId, TaskStatus taskStatus) {
+
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.seveniu.web;
 
 import com.seveniu.consumer.ConsumerManager;
-import com.seveniu.consumer.remote.RemoteConsumerConfig;
+import com.seveniu.thriftServer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +32,12 @@ public class ConsumerApi {
 
     @RequestMapping(value = "/reg", method = RequestMethod.POST, produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<String> reg(@RequestBody RemoteConsumerConfig remoteConsumerConfig) {
+    public ResponseEntity<String> reg(@RequestBody ConsumerConfig remoteConsumerConfig) {
         try {
-            boolean result = consumerManager.regRemoteConsumer(remoteConsumerConfig);
-            if(result) {
-                return ResponseEntity.ok().body("true");
-            } else {
-                return ResponseEntity.ok().body("exist");
-            }
+            String result = consumerManager.regRemoteConsumer(remoteConsumerConfig);
+            return ResponseEntity.ok().body(result);
         } catch (Exception e) {
-            logger.warn("reg consumer failed : error : {}",e.getMessage());
+            logger.warn("reg consumer failed : error : {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 

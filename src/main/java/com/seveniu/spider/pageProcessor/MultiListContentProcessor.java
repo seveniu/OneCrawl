@@ -1,6 +1,8 @@
 package com.seveniu.spider.pageProcessor;
 
+import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
+import com.seveniu.parse.Link;
 import com.seveniu.parse.PageResult;
 import com.seveniu.parse.ParseResult;
 import com.seveniu.template.PagesTemplate;
@@ -13,9 +15,9 @@ import us.codecraft.webmagic.Request;
  * Created by seveniu on 5/12/16.
  * MyPageProcessor
  */
-public class multipleListContentProcessor extends MyPageProcessor {
-    public multipleListContentProcessor(PagesTemplate pagesTemplate) {
-        super(pagesTemplate);
+public class MultiListContentProcessor extends MyPageProcessor {
+    public MultiListContentProcessor(PagesTemplate pagesTemplate, Consumer consumer) {
+        super(pagesTemplate, consumer);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class multipleListContentProcessor extends MyPageProcessor {
         if (curSerialNum < pagesNum - 1) { // 跳转页面
             targetPage(page, parseResult, curSerialNum);
         } else if (curSerialNum == pagesNum - 1) {
-            contentPage(page, parseResult,curSerialNum);
+            contentPage(page, parseResult, curSerialNum);
         }
     }
 
@@ -52,8 +54,8 @@ public class multipleListContentProcessor extends MyPageProcessor {
         // 处理解析的结果
         // 下一页链接
         if (parseResult.hasNextPageLinks()) {
-            for (String next : parseResult.getNextPageLinks()) {
-                page.addTargetRequest(new Request(next).putExtra(SERIAL_NUM, curSerialNum));
+            for (Link next : parseResult.getNextPageLinks()) {
+                page.addTargetRequest(new Request(next.getUrl()).putExtra(SERIAL_NUM, curSerialNum));
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
@@ -61,13 +63,13 @@ public class multipleListContentProcessor extends MyPageProcessor {
 
         // 跳转链接
         if (parseResult.hasLinks()) {
-            for (String targetLink : parseResult.getTargetLinks()) {
-                if (consumer.has(targetLink)) { //
+            for (Link targetLink : parseResult.getTargetLinks()) {
+                if (consumer.has(targetLink.getUrl())) { //
                     logger.debug("url is repeat : {} ", targetLink);
                     statistic.addRepeatUrlCount(1);
                 } else {
-                    Node node = new Node(targetLink, taskId);
-                    page.addTargetRequest(new Request(targetLink).putExtra(CONTEXT_NODE, node).putExtra(SERIAL_NUM, curSerialNum + 1));
+                    Node node = new Node(targetLink.getUrl(), taskId);
+                    page.addTargetRequest(new Request(targetLink.getUrl()).putExtra(CONTEXT_NODE, node).putExtra(SERIAL_NUM, curSerialNum + 1));
                 }
             }
             // 统计
@@ -87,7 +89,7 @@ public class multipleListContentProcessor extends MyPageProcessor {
                 logger.error("context Node is null");
             } else {
                 statistic.addCreateNodeCount(1);
-                contextNode.addPageResult(new PageResult(url, parseResult.getFieldResults()));
+                contextNode.addPageResult(new PageResult().setUrl(url).setFieldResults(parseResult.getFieldResults()));
             }
         } else {
             logger.error("content page field is null, url : {}", url);
@@ -95,8 +97,8 @@ public class multipleListContentProcessor extends MyPageProcessor {
 
         // 下一页链接
         if (parseResult.hasNextPageLinks()) {
-            for (String next : parseResult.getNextPageLinks()) {
-                page.addTargetRequest(new Request(next).putExtra(CONTEXT_NODE, contextNode).putExtra(SERIAL_NUM, curSerialNum));
+            for (Link next : parseResult.getNextPageLinks()) {
+                page.addTargetRequest(new Request(next.getUrl()).putExtra(CONTEXT_NODE, contextNode).putExtra(SERIAL_NUM, curSerialNum));
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());

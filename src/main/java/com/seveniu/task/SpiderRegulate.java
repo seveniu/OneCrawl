@@ -2,11 +2,6 @@ package com.seveniu.task;
 
 import com.seveniu.consumer.Consumer;
 import com.seveniu.consumer.ConsumerManager;
-import com.seveniu.consumer.TaskInfo;
-import com.seveniu.spider.MySpider;
-import com.seveniu.spider.SpiderFactory;
-import com.seveniu.spider.TemplateType;
-import com.seveniu.template.PagesTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +95,7 @@ public class SpiderRegulate {
                             SpiderTask task = iterator.next();
                             if (task.getStatus() == Spider.Status.Stopped) {
                                 iterator.remove();
-                                curThread.addAndGet(0 - task.spiderConfig().getThreadNum());
+                                curThread.addAndGet(0 - task.taskInfo().getThreadNum());
                             }
                         }
                         TimeUnit.SECONDS.sleep(5);

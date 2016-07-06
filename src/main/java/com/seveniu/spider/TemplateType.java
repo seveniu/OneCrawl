@@ -6,7 +6,8 @@ package com.seveniu.spider;
  * SpiderType
  */
 public enum TemplateType {
-    MULTI_LAYER_CONTENT(1);
+    MULTI_LAYER_CONTENT(1),
+    TEST_SINGLE_PAGE(2);
 
 
     private int id;
@@ -20,6 +21,8 @@ public enum TemplateType {
         switch (id) {
             case 1:
                 return MULTI_LAYER_CONTENT;
+            case 2:
+                return TEST_SINGLE_PAGE;
             default:
                 throw new IllegalArgumentException("id " + id + " is error");
         }

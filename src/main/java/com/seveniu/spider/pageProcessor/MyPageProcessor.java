@@ -22,21 +22,22 @@ import us.codecraft.webmagic.processor.PageProcessor;
 public abstract class MyPageProcessor implements PageProcessor {
     public static final String CONTEXT_NODE = "node";
     static final String SERIAL_NUM = "serialNum";
+    static final String TEMPLATE = "serialNum";
     Logger logger = LoggerFactory.getLogger(this.getClass());
     protected MySpider mySpider;
+    protected Consumer consumer;
 
     PagesTemplate pagesTemplate;
     TaskStatistic statistic;
-    Consumer consumer;
     String taskId;
 
-    MyPageProcessor(PagesTemplate pagesTemplate) {
+    public MyPageProcessor(PagesTemplate pagesTemplate, Consumer consumer) {
         this.pagesTemplate = pagesTemplate;
+        this.consumer = consumer;
     }
 
     public void setMySpider(MySpider mySpider) {
         this.mySpider = mySpider;
-        this.consumer = mySpider.getConsumer();
         this.statistic = mySpider.getTaskStatistic();
         this.taskId = mySpider.getSpiderConfig().getId();
     }

@@ -1,6 +1,8 @@
 package com.seveniu.spider.pageProcessor;
 
+import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
+import com.seveniu.parse.Link;
 import com.seveniu.parse.PageResult;
 import com.seveniu.parse.ParseResult;
 import com.seveniu.template.PagesTemplate;
@@ -13,11 +15,11 @@ import us.codecraft.webmagic.Request;
  * Created by seveniu on 5/12/16.
  * MyPageProcessor
  */
-public class SSinglePageProcessor extends MyPageProcessor {
+public class SinglePageProcessor extends MyPageProcessor {
 
 
-    public SSinglePageProcessor(PagesTemplate pagesTemplate) {
-        super(pagesTemplate);
+    public SinglePageProcessor(PagesTemplate pagesTemplate, Consumer consumer) {
+        super(pagesTemplate, consumer);
     }
 
     @Override
@@ -47,18 +49,18 @@ public class SSinglePageProcessor extends MyPageProcessor {
                 contextNode = new Node(url, taskId);
                 statistic.addCreateNodeCount(1);
             }
-            contextNode.addPageResult(new PageResult(url, parseResult.getFieldResults()));
+            contextNode.addPageResult(new PageResult().setUrl(url).setFieldResults(parseResult.getFieldResults()));
         } else {
             logger.error("content page field is null, url : {}", url);
         }
         // 跳转链接
         if (parseResult.hasLinks()) {
-            for (String targetLink : parseResult.getTargetLinks()) {
-                if (consumer.has(targetLink)) { //
+            for (Link targetLink : parseResult.getTargetLinks()) {
+                if (consumer.has(targetLink.getUrl())) { //
                     logger.debug("url is repeat : {} ", targetLink);
                     statistic.addRepeatUrlCount(1);
                 } else {
-                    page.addTargetRequest(new Request(targetLink));
+                    page.addTargetRequest(new Request(targetLink.getUrl()));
                 }
             }
             // 统计
@@ -67,8 +69,8 @@ public class SSinglePageProcessor extends MyPageProcessor {
         }
         // 下一页链接
         if (parseResult.hasNextPageLinks()) {
-            for (String next : parseResult.getNextPageLinks()) {
-                page.addTargetRequest(new Request(next).putExtra(CONTEXT_NODE, contextNode));
+            for (Link next : parseResult.getNextPageLinks()) {
+                page.addTargetRequest(new Request(next.getUrl()).putExtra(CONTEXT_NODE, contextNode));
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
