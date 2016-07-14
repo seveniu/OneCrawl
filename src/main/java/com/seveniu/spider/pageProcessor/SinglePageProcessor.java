@@ -15,10 +15,10 @@ import us.codecraft.webmagic.Request;
  * Created by seveniu on 5/12/16.
  * MyPageProcessor
  */
-public class SinglePageProcessorFix extends MyPageProcessor {
+public class SinglePageProcessor extends MyPageProcessor {
 
 
-    public SinglePageProcessorFix(PagesTemplate pagesTemplate, Consumer consumer) {
+    public SinglePageProcessor(PagesTemplate pagesTemplate, Consumer consumer) {
         super(pagesTemplate, consumer);
     }
 
