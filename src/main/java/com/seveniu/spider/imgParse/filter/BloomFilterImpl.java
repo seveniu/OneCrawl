@@ -6,6 +6,9 @@ import com.google.common.hash.Funnels;
 import com.seveniu.common.tools.ShutdownHook;
 import com.seveniu.common.tools.ShutdownHookManager;
 import com.seveniu.def.SystemError;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,12 +21,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by seveniu on 5/24/16.
  * BloomFilterImpl
  */
+@Component
 public class BloomFilterImpl implements ImageRepeatCheck, ShutdownHook {
     private BloomFilter<CharSequence> images;
     private AtomicInteger count = new AtomicInteger();
     private String serializablePath;
 
-    public BloomFilterImpl(String serializablePath) {
+    @Autowired
+    public BloomFilterImpl(@Value("${imageBloomFilePath}") String serializablePath) {
         this.serializablePath = serializablePath;
         ShutdownHookManager.get().register(this);
         deserialization();

@@ -37,14 +37,17 @@ hello: hello
 spring:
     profiles: home
 thriftServerPort: 20003
+imageBloomFilePath: image-bloom-file/img_bloom_file
 hello: hello-home
 
 ---
 spring:
     profiles: dev
 thriftServerPort: 20003
+imageBloomFilePath: image-bloom-file/img_bloom_file
 
 ---
 spring:
     profiles: stable
 thriftServerPort: 20003
+imageBloomFilePath: image-bloom-file/img_bloom_file

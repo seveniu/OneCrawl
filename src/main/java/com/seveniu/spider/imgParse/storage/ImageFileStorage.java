@@ -1,6 +1,7 @@
 package com.seveniu.spider.imgParse.storage;
 
 import com.seveniu.common.file.FileUtil;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
  * Created by seveniu on 5/24/16.
  * ImageFileSave
  */
+@Component
 public class ImageFileStorage implements ImageStorage {
     public static final String PATH = "image/";
 

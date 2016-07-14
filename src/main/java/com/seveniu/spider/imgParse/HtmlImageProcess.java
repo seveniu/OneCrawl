@@ -2,15 +2,13 @@ package com.seveniu.spider.imgParse;
 
 import com.seveniu.common.thread.CountDownExecutor;
 import com.seveniu.spider.imgParse.downloader.ImageDownloader;
-import com.seveniu.spider.imgParse.filter.BloomFilterImpl;
 import com.seveniu.spider.imgParse.filter.ImageRepeatCheck;
-import com.seveniu.spider.imgParse.recorder.ImageLoggerRecorder;
 import com.seveniu.spider.imgParse.recorder.ImageRecorder;
-import com.seveniu.spider.imgParse.storage.ImageFileStorage;
 import com.seveniu.spider.imgParse.storage.ImageStorage;
 import com.seveniu.util.AppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Site;
 
@@ -39,8 +37,11 @@ public class HtmlImageProcess {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final int THREAD_NUM = 20;
     private ImageDownloader imageDownloader;
+    @Autowired
     private ImageRepeatCheck imageRepeatCheck;
+    @Autowired
     private ImageStorage imageStorage;
+    @Autowired
     private ImageRecorder imageRecorder;
 
     private ThreadPoolExecutor fix = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_NUM, new ThreadFactory() {
@@ -53,28 +54,12 @@ public class HtmlImageProcess {
     });
 
     public HtmlImageProcess() {
-        this(null, null, null);
-    }
-
-    public HtmlImageProcess(ImageRepeatCheck imageRepeatCheck, ImageStorage imageStorage, ImageRecorder imageRecorder) {
-        if (imageRepeatCheck == null) {
-            imageRepeatCheck = new BloomFilterImpl("img_bloom_file");
-        }
-        if (imageStorage == null) {
-            imageStorage = new ImageFileStorage();
-        }
-        if (imageRecorder == null) {
-            imageRecorder = new ImageLoggerRecorder();
-        }
-        this.imageRepeatCheck = imageRepeatCheck;
-        this.imageStorage = imageStorage;
-        this.imageRecorder = imageRecorder;
         this.imageDownloader = new ImageDownloader(THREAD_NUM);
     }
 
-    public HtmlImageProcess(ImageRepeatCheck imageRepeatCheck, ImageStorage imageStorage) {
-        this(imageRepeatCheck, imageStorage, null);
-    }
+//    public HtmlImageProcess(ImageRepeatCheck imageRepeatCheck, ImageStorage imageStorage) {
+//        this(imageRepeatCheck, imageStorage, null);
+//    }
 
 
     private static final Pattern IMG_TAG = Pattern.compile("(<img[\\s\\S]*?>)");
