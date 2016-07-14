@@ -105,7 +105,7 @@ dependencies {
     compile('commons-validator:commons-validator:1.4.0')
 
 
-    compile('com.seveniu:Commons:0.0.10')
+    compile('com.seveniu:Commons:0.0.12')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 

@@ -20,7 +20,7 @@ import java.util.List;
 public class Field {
 
     private int type;
-    private int contentType;
+    private int id;
     private String name;
 
     private String defaultValue = "";
@@ -44,12 +44,12 @@ public class Field {
         this.name = name;
     }
 
-    public int getContentType() {
-        return contentType;
+    public int getId() {
+        return id;
     }
 
-    public void setContentType(int contentType) {
-        this.contentType = contentType;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getXpath() {
@@ -92,7 +92,7 @@ public class Field {
     public String toString() {
         return "Field{" +
                 "type=" + type +
-                ", contentType=" + contentType +
+                ", id=" + id +
                 ", name='" + name + '\'' +
                 ", defaultValue='" + defaultValue + '\'' +
                 ", xpath='" + xpath + '\'' +
@@ -130,7 +130,7 @@ public class Field {
             field.setType(htmlType.intValue());
 
             JsonNode contentType = node.get("id");
-            field.setContentType(contentType.intValue());
+            field.setId(contentType.intValue());
 
             JsonNode name = node.get("text");
             field.setName(name.asText());

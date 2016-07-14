@@ -1,6 +1,6 @@
 package com.seveniu.spider;
 
-import com.seveniu.spider.imgParse.ImageProcess;
+import com.seveniu.spider.imgParse.HtmlImageProcess;
 import com.seveniu.spider.pageProcessor.MyPageProcessor;
 import com.seveniu.spider.pipeline.MyPipeLine;
 import com.seveniu.task.SpiderTask;
@@ -32,7 +32,7 @@ public class MySpider extends Spider implements SpiderTask {
     private TaskStatistic taskStatistic;
     private TemplateType templateType;
     private String templateId;
-    private ImageProcess imageProcess;
+    private HtmlImageProcess htmlImageProcess;
 
 
     MySpider(String id, TaskInfo config, MyPipeLine myPipeLine, MyPageProcessor pageProcessor, TaskStatistic taskStatistic) {
@@ -47,7 +47,7 @@ public class MySpider extends Spider implements SpiderTask {
         this.taskStatistic = taskStatistic;
         this.templateId = config.getTemplateId();
         setConfig(config);
-        this.imageProcess = ImageProcess.get();
+        this.htmlImageProcess = HtmlImageProcess.get();
         pageProcessor.setMySpider(this);
     }
 
@@ -138,8 +138,8 @@ public class MySpider extends Spider implements SpiderTask {
         return taskStatistic;
     }
 
-    public ImageProcess getImageProcess() {
-        return imageProcess;
+    public HtmlImageProcess getHtmlImageProcess() {
+        return htmlImageProcess;
     }
 
     @Override

@@ -56,7 +56,13 @@ public class ConsumerTaskManager {
     private final Object addLock = new Object();
 
     public boolean addTask(TaskInfo taskInfo) {
-        PagesTemplate pagesTemplate = PagesTemplate.fromJson(taskInfo.getTemplateId(), taskInfo.getTemplate());
+        PagesTemplate pagesTemplate;
+        try {
+            pagesTemplate = PagesTemplate.fromJson(taskInfo.getTemplateId(), taskInfo.getTemplate());
+        } catch (Exception e) {
+            logger.warn("task: {} ,template : {} parse error", taskInfo.getId(), taskInfo.getTemplateId());
+            return false;
+        }
         if (pagesTemplate == null) {
             logger.error("consumer {} 's template {} is error", consumer.getName(), taskInfo.getTemplateId());
             return false;
@@ -180,13 +186,13 @@ public class ConsumerTaskManager {
 
         @Override
         protected void beforeExecute(Thread t, Runnable r) {
-            SpiderTask spiderTask = (SpiderTask)r;
+            SpiderTask spiderTask = (SpiderTask) r;
             consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
         }
 
         @Override
         protected void afterExecute(Runnable r, Throwable t) {
-            MySpider spiderTask = (MySpider)r;
+            MySpider spiderTask = (MySpider) r;
             consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.STOP);
 
             consumer.statistic(spiderTask.getTaskStatistic());

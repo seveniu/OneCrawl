@@ -6,6 +6,8 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.net.ConnectException;
  */
 @Service
 public class ThriftServer {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     ConsumerManager consumerManager;
@@ -39,6 +42,7 @@ public class ThriftServer {
                 e.printStackTrace();
             }
         }, "thrift-server-thread").start();
+        logger.info("start crawl thrift server at : {}", port);
     }
 
     private class Server implements CrawlThrift.Iface {

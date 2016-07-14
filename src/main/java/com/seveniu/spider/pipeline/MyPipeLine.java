@@ -35,11 +35,11 @@ public class MyPipeLine implements Pipeline {
             MySpider mySpider = (MySpider) task;
 
             // 处理图片
-            if (mySpider.getImageProcess() != null) {
+            if (mySpider.getHtmlImageProcess() != null) {
                 for (PageResult pageResult : node.getPages()) {
                     for (FieldResult fieldResult : pageResult.getFieldResults()) {
                         if (fieldResult.getFieldHtmlType() == FieldType.HTML_TEXT.getId()) {
-                            String result = mySpider.getImageProcess().process(fieldResult.getResult(), mySpider.getSite());
+                            String result = mySpider.getHtmlImageProcess().process(node.getUrl(),fieldResult.getResult(), mySpider.getSite());
                             fieldResult.setResult(result);
                         }
                     }

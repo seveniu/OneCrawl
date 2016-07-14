@@ -128,7 +128,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getId(), field.getType(), field.getName(), content));
     }
 
     private void parsePureContent(Field field) {
@@ -141,7 +141,7 @@ public class ParseHtml {
         if (content == null || content.length() == 0) {
             content = field.getDefaultValue();
         }
-        parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), content));
+        parseResult.addFieldResult(new FieldResult(field.getId(), field.getType(), field.getName(), content));
     }
 
     private void parseLinkLabel(Field field) {
@@ -227,7 +227,7 @@ public class ParseHtml {
                         links.add(new Link(title, url));
                     }
                 }
-                parseResult.addFieldResult(new FieldResult(field.getContentType(), field.getType(), field.getName(), links));
+                parseResult.addFieldResult(new FieldResult(field.getId(), field.getType(), field.getName(), links));
             }
         } else {
             if (field.isMust()) {

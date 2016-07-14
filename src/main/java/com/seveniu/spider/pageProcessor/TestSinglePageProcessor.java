@@ -2,7 +2,6 @@ package com.seveniu.spider.pageProcessor;
 
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
-import com.seveniu.parse.FieldResult;
 import com.seveniu.parse.PageResult;
 import com.seveniu.parse.ParseResult;
 import com.seveniu.template.PagesTemplate;
@@ -10,7 +9,6 @@ import com.seveniu.template.def.Field;
 import com.seveniu.template.def.FieldType;
 import com.seveniu.template.def.Template;
 import us.codecraft.webmagic.Page;
-import us.codecraft.webmagic.Request;
 
 /**
  * Created by seveniu on 7/5/16.
@@ -38,9 +36,9 @@ public class TestSinglePageProcessor extends MyPageProcessor {
             return null;
         }
         for (Field field : template.getFields()) {
-            if (field.getContentType() == FieldType.TARGET_LINK.getId()
-                    || field.getContentType() == FieldType.NEXT_LINK.getId()) {
-                field.setContentType(FieldType.TEXT_LINK.getId());
+            if (field.getType() == FieldType.TARGET_LINK.getId()
+                    || field.getType() == FieldType.NEXT_LINK.getId()) {
+                field.setType(FieldType.TEXT_LINK.getId());
             }
         }
         return template;

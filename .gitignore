@@ -11,4 +11,4 @@ image/
 img_bloom_file
 src/main/java/com/seveniu/template/parse/
 src/main/resources/static/pagurain/resources/less/
-
+gen-java/
