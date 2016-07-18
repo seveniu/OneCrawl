@@ -47,7 +47,7 @@ public class SpiderRegulate {
     public static class SpiderInfo {
         private String consumerName;
         private int waitSpiderNum;
-        private int spiderNum;
+        private int runningSpiderNum;
         private int runThreadNum;
 
         public String getConsumerName() {
@@ -66,12 +66,12 @@ public class SpiderRegulate {
             this.waitSpiderNum = waitSpiderNum;
         }
 
-        public int getSpiderNum() {
-            return spiderNum;
+        public int getRunningSpiderNum() {
+            return runningSpiderNum;
         }
 
-        public void setSpiderNum(int spiderNum) {
-            this.spiderNum = spiderNum;
+        public void setRunningSpiderNum(int runningSpiderNum) {
+            this.runningSpiderNum = runningSpiderNum;
         }
 
         public int getRunThreadNum() {

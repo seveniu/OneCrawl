@@ -35,4 +35,6 @@
  service CrawlThrift{
   string reg(1:ConsumerConfig consumerConfig)// 返回 uuid
   bool addTask(1:string uuid,2:TaskInfo task)
+  string getRunningTasks(1:string uuid)
+  string getTaskSummary(1:string uuid)
  }

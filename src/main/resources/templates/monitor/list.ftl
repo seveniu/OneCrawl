@@ -91,7 +91,7 @@
                 "tpl": "等待:{0}"
             });
             rows.push({
-                "dataName": "spiderNum",
+                "dataName": "runningSpiderNum",
                 "tpl": "运行:{0}"
             });
             rows.push({
@@ -109,7 +109,7 @@
             result.result.push({
                 "consumerName": "哈哈哈",
                 "waitSpiderNum": 12341234,
-                "spiderNum": 11,
+                "runningSpiderNum": 11,
                 "runThreadNum": 22
             });
             result.result.forEach(function (v) {

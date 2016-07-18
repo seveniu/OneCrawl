@@ -3,9 +3,9 @@ package com.seveniu.spider.pageProcessor;
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
-import com.seveniu.parse.ParseHtml;
-import com.seveniu.parse.ParseResult;
 import com.seveniu.spider.MySpider;
+import com.seveniu.spider.parse.ParseHtml;
+import com.seveniu.spider.parse.ParseResult;
 import com.seveniu.task.TaskStatistic;
 import com.seveniu.template.PagesTemplate;
 import com.seveniu.template.def.Template;
@@ -68,7 +68,7 @@ public abstract class MyPageProcessor implements PageProcessor {
             if (contextNode != null) {
                 statistic.addErrorNodeCount(1);
             }
-            logger.warn("parse html error : {}", Json.toJson(parseResult.getParseError()));
+            logger.warn("parse html error : {}, url:{}", Json.toJson(parseResult.getParseError()), page.getUrl());
         } else {
             statistic.addDoneUrlCount(1);
         }

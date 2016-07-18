@@ -1,4 +1,4 @@
-package com.seveniu.parse;
+package com.seveniu.spider.parse;
 
 import com.seveniu.template.def.Field;
 import com.seveniu.template.def.FieldType;
@@ -36,6 +36,8 @@ public class ParseHtml {
         parseHtml.html = html;
         parseHtml.template = template;
         parseHtml.parseResult = new ParseResult(url);
+        // 去除 script
+        html.getDocument().getElementsByTag("script").remove();
         return parseHtml.parsePage();
     }
 
@@ -208,7 +210,12 @@ public class ParseHtml {
             }
         }
     }
-
+    /**
+     * 不接受 regex 处理
+     */
+    private void parseDownloadLinkLabel(Field field) {
+        parseTextLinkLabel(field);
+    }
     /**
      * 不接受 regex 处理
      */

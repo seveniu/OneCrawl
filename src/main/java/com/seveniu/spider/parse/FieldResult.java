@@ -1,4 +1,4 @@
-package com.seveniu.parse;
+package com.seveniu.spider.parse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +25,15 @@ public class FieldResult {
         this.fieldHtmlType = fieldHtmlType;
         this.linkResult = links;
     }
-    public FieldResult(int fieldId,int fieldHtmlType,String name, List<Link> result) {
+
+    public FieldResult(int fieldId, int fieldHtmlType, String name, List<Link> result) {
         this.name = name;
         this.fieldId = fieldId;
         this.fieldHtmlType = fieldHtmlType;
         this.linkResult = result;
     }
-    public FieldResult(int fieldId,int fieldHtmlType,String name, String result) {
+
+    public FieldResult(int fieldId, int fieldHtmlType, String name, String result) {
         this.name = name;
         this.fieldId = fieldId;
         this.fieldHtmlType = fieldHtmlType;

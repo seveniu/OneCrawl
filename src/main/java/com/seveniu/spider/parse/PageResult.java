@@ -1,4 +1,4 @@
-package com.seveniu.parse;
+package com.seveniu.spider.parse;
 
 import java.util.ArrayList;
 import java.util.List;

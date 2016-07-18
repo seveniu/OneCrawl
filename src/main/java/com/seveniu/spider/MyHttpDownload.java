@@ -10,6 +10,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
@@ -92,7 +93,7 @@ public class MyHttpDownload extends HttpClientDownloader {
         }
         logger.info("downloading page {}", request.getUrl());
         CloseableHttpResponse httpResponse = null;
-        int statusCode=0;
+        int statusCode = 0;
         try {
             HttpUriRequest httpUriRequest = getHttpUriRequest(request, site, headers);
             httpResponse = getHttpClient(site).execute(httpUriRequest);
@@ -104,9 +105,17 @@ public class MyHttpDownload extends HttpClientDownloader {
                 return page;
             } else {
                 logger.warn("code error " + statusCode + "\t" + request.getUrl());
-                errorListener.onStatusCodeError(request,statusCode);
+                errorListener.onStatusCodeError(request, statusCode);
                 return null;
             }
+        } catch (ConnectTimeoutException e) {
+//            logger.warn("download page " + request.getUrl() + " error", e);
+            if (site.getCycleRetryTimes() > 0) {
+                return addToCycleRetry(request, site);
+            }
+            onError(request);
+            errorListener.onTimeOutError(request);
+            return null;
         } catch (ConnectException e) {
             logger.warn("download page " + request.getUrl() + " connect error", e);
             return null;
@@ -157,7 +166,7 @@ public class MyHttpDownload extends HttpClientDownloader {
             HttpHost host = site.getHttpProxyFromPool();
             requestConfigBuilder.setProxy(host);
             request.putExtra(Request.PROXY, host);
-        }else if(site.getHttpProxy()!= null){
+        } else if (site.getHttpProxy() != null) {
             HttpHost host = site.getHttpProxy();
             requestConfigBuilder.setProxy(host);
             request.putExtra(Request.PROXY, host);
@@ -201,50 +210,52 @@ public class MyHttpDownload extends HttpClientDownloader {
     }
 
     protected String getContent(String charset, HttpResponse httpResponse) throws IOException {
+        byte[] contentBytes = IOUtils.toByteArray(httpResponse.getEntity().getContent());
         if (charset == null) {
-            byte[] contentBytes = IOUtils.toByteArray(httpResponse.getEntity().getContent());
-            String htmlCharset = getHtmlCharset(httpResponse, contentBytes);
-            if (htmlCharset != null) {
-                return new String(contentBytes, htmlCharset);
-            } else {
-                logger.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()", Charset.defaultCharset());
-                return new String(contentBytes);
-            }
+            charset = getHtmlCharset(httpResponse, contentBytes);
+        }
+        if (charset!= null) {
+            return new String(contentBytes, charset);
         } else {
-            return IOUtils.toString(httpResponse.getEntity().getContent(), charset);
+            logger.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()", Charset.defaultCharset());
+            return new String(contentBytes);
         }
     }
+
     protected String getHtmlCharset(HttpResponse httpResponse, byte[] contentBytes) throws IOException {
         String value = httpResponse.getEntity().getContentType().getValue();
         String charset = UrlUtils.getCharset(value);
-        if(StringUtils.isNotBlank(charset)) {
+        if (StringUtils.isNotBlank(charset)) {
             this.logger.debug("Auto get charset: {}", charset);
             return charset;
         } else {
             Charset defaultCharset = Charset.defaultCharset();
             String content = new String(contentBytes, defaultCharset.name());
-            if(StringUtils.isNotEmpty(content)) {
+            if (StringUtils.isNotEmpty(content)) {
                 Document document = Jsoup.parse(content);
                 Elements links = document.select("meta");
                 Iterator i$ = links.iterator();
 
-                while(i$.hasNext()) {
-                    Element link = (Element)i$.next();
+                while (i$.hasNext()) {
+                    Element link = (Element) i$.next();
                     String metaContent = link.attr("content");
                     String metaCharset = link.attr("charset");
-                    if(metaContent.indexOf("charset") != -1) {
+                    if (metaContent.indexOf("charset") != -1) {
                         metaContent = metaContent.substring(metaContent.indexOf("charset"), metaContent.length());
                         charset = metaContent.split("=")[1];
                         break;
                     }
 
-                    if(StringUtils.isNotEmpty(metaCharset)) {
+                    if (StringUtils.isNotEmpty(metaCharset)) {
                         charset = metaCharset;
                         break;
                     }
                 }
             }
 
+            if(charset.toUpperCase().equals("GB2312")) {
+                charset = "GBK";
+            }
             this.logger.debug("Auto get charset: {}", charset);
             return charset;
         }

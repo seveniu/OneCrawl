@@ -1,6 +1,6 @@
 package com.seveniu.node;
 
-import com.seveniu.parse.PageResult;
+import com.seveniu.spider.parse.PageResult;
 
 import java.util.ArrayList;
 import java.util.List;

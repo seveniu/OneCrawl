@@ -1,4 +1,4 @@
-package com.seveniu.parse;
+package com.seveniu.spider.parse;
 
 import com.seveniu.template.def.Field;
 

@@ -2,9 +2,9 @@ package com.seveniu.spider.pageProcessor;
 
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
-import com.seveniu.parse.Link;
-import com.seveniu.parse.PageResult;
-import com.seveniu.parse.ParseResult;
+import com.seveniu.spider.parse.Link;
+import com.seveniu.spider.parse.PageResult;
+import com.seveniu.spider.parse.ParseResult;
 import com.seveniu.template.PagesTemplate;
 import com.seveniu.template.def.Template;
 import us.codecraft.webmagic.Page;

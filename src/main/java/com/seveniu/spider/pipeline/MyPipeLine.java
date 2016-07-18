@@ -2,11 +2,9 @@ package com.seveniu.spider.pipeline;
 
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
-import com.seveniu.parse.FieldResult;
-import com.seveniu.parse.PageResult;
-import com.seveniu.spider.MySpider;
 import com.seveniu.spider.pageProcessor.MyPageProcessor;
-import com.seveniu.template.def.FieldType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
@@ -20,6 +18,7 @@ import us.codecraft.webmagic.pipeline.Pipeline;
  */
 public class MyPipeLine implements Pipeline {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Consumer consumer;
 
     public MyPipeLine(Consumer consumer) {
@@ -32,18 +31,8 @@ public class MyPipeLine implements Pipeline {
         if (resultItems.getAll().size() > 0) {
 
             Node node = resultItems.get(MyPageProcessor.CONTEXT_NODE);
-            MySpider mySpider = (MySpider) task;
-
-            // 处理图片
-            if (mySpider.getHtmlImageProcess() != null) {
-                for (PageResult pageResult : node.getPages()) {
-                    for (FieldResult fieldResult : pageResult.getFieldResults()) {
-                        if (fieldResult.getFieldHtmlType() == FieldType.HTML_TEXT.getId()) {
-                            String result = mySpider.getHtmlImageProcess().process(node.getUrl(),fieldResult.getResult(), mySpider.getSite());
-                            fieldResult.setResult(result);
-                        }
-                    }
-                }
+            if (node == null) {
+                logger.warn("pipeline get node is null");
             }
 
             // out 输出

@@ -6,13 +6,15 @@ import com.seveniu.spider.SpiderFactory;
 import com.seveniu.spider.TemplateType;
 import com.seveniu.task.SpiderRegulate;
 import com.seveniu.task.SpiderTask;
+import com.seveniu.task.TaskStatistic;
 import com.seveniu.template.PagesTemplate;
 import com.seveniu.thriftServer.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Spider;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,7 +28,8 @@ public class ConsumerTaskManager {
 
     private ThreadPoolExecutor spiderExecServer;
     private LinkedBlockingQueue<Runnable> waitTaskQueue;
-    private LinkedHashMap<String, MySpider> allSpider;
+    private LinkedBlockingQueue<MySpider> runningQueue;
+    private ConcurrentHashMap<String, MySpider> allSpider = new ConcurrentHashMap<>();
     private volatile boolean stop = false;
 
     private Consumer consumer;
@@ -37,7 +40,7 @@ public class ConsumerTaskManager {
 
     public void start() {
         waitTaskQueue = new LinkedBlockingQueue<>();
-        allSpider = new LinkedHashMap<>();
+        runningQueue = new LinkedBlockingQueue<>();
 
         spiderExecServer = new SpiderThreadPoolExecutor(THREAD_MAX, THREAD_MAX,
                 1L, TimeUnit.MINUTES,
@@ -74,23 +77,18 @@ public class ConsumerTaskManager {
                 if (spiderTask != null) {
                     if (spiderTask.getStatus() == Spider.Status.Running) {
                         logger.info("spider task : {}  has running", spiderTaskId);
-                        return false;
                     } else if (spiderTask.getStatus() == Spider.Status.Init) {
                         logger.info("spider task : {}  is waiting", spiderTaskId);
-                        return false;
                     } else {
-                        allSpider.remove(spiderTaskId);
                         logger.info("spider task : {}  is running ....", spiderTaskId);
-                        return false;
                     }
-                }
-                if (hasWait(spiderTaskId)) {
                     return false;
                 }
+
                 try {
                     TemplateType templateType = TemplateType.get(taskInfo.getTemplateType().getValue());
                     MySpider mySpider = SpiderFactory.getSpider(spiderTaskId, templateType, taskInfo, consumer, pagesTemplate);
-                    allSpider.put(mySpider.getId(), mySpider);
+                    allSpider.put(taskInfo.getId(), mySpider);
                     execTask(mySpider);
                     return true;
                 } catch (IllegalArgumentException e) {
@@ -114,25 +112,6 @@ public class ConsumerTaskManager {
     }
 
 
-//    private void schedule() {
-//        getTaskScheduled.scheduleAtFixedRate(() -> {
-//            logger.info("test get exec Service cur active num {}", spiderExecServer.getActiveCount());
-//            logger.debug("consumer task getter ....");
-//            if (stop) {
-//                return;
-//            }
-//            List<Task> taskList = consumer.receiveTasks();
-//            if (taskList == null) {
-//                logger.warn("consumer : {} get task list is null", consumer.getName());
-//                return;
-//            }
-//            for (Task taskInfo : taskList) {
-//                addTask(consumer, taskInfo);
-//            }
-//
-//        }, 10, 10, TimeUnit.SECONDS);
-//    }
-
     private void execTask(SpiderTask spiderTask) {
         if (stop) {
             return;
@@ -146,9 +125,6 @@ public class ConsumerTaskManager {
         stop = false;
         spiderExecServer.shutdownNow();
 
-        for (MySpider mySpider : allSpider.values()) {
-            mySpider.stop();
-        }
         waitTaskQueue.clear();
         allSpider.clear();
     }
@@ -169,13 +145,21 @@ public class ConsumerTaskManager {
         SpiderRegulate.SpiderInfo spiderInfo = new SpiderRegulate.SpiderInfo();
         spiderInfo.setConsumerName(consumer.getName());
         spiderInfo.setWaitSpiderNum(waitTaskQueue.size());
-        spiderInfo.setSpiderNum(allSpider.size());
+        spiderInfo.setRunningSpiderNum(runningQueue.size());
         int threadNum = 0;
-        for (SpiderTask spiderTask : allSpider.values()) {
+        for (SpiderTask spiderTask : runningQueue) {
             threadNum += spiderTask.taskInfo().getThreadNum();
         }
         spiderInfo.setRunThreadNum(threadNum);
         return spiderInfo;
+    }
+
+    public List<TaskStatistic> getRunningTaskInfo() {
+        List<TaskStatistic> taskStatisticList = new ArrayList<>();
+        for (MySpider mySpider : runningQueue) {
+            taskStatisticList.add(mySpider.getTaskStatistic());
+        }
+        return taskStatisticList;
     }
 
 
@@ -188,6 +172,7 @@ public class ConsumerTaskManager {
         protected void beforeExecute(Thread t, Runnable r) {
             SpiderTask spiderTask = (SpiderTask) r;
             consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
+            runningQueue.add((MySpider) r);
         }
 
         @Override
@@ -196,7 +181,8 @@ public class ConsumerTaskManager {
             consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.STOP);
 
             consumer.statistic(spiderTask.getTaskStatistic());
-            consumer.getTaskManager().removerStopSpider(spiderTask);
+            removerStopSpider(spiderTask);
+            runningQueue.remove(r);
         }
     }
 }

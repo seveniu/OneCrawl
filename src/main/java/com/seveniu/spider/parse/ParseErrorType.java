@@ -1,4 +1,4 @@
-package com.seveniu.parse;
+package com.seveniu.spider.parse;
 
 /**
  * Created by seveniu on 5/12/16.

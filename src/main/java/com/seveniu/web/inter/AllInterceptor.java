@@ -1,4 +1,4 @@
-package com.seveniu.inter;
+package com.seveniu.web.inter;
 
 import com.seveniu.util.SessionUtil;
 import org.springframework.stereotype.Component;

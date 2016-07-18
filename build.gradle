@@ -100,7 +100,6 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-api' //by both name and group
     }
     compile('com.google.guava:guava:18.0')
-    compile('com.alibaba:druid:1.0.15')
     compile('org.apache.thrift:libthrift:0.9.3')
     compile('commons-validator:commons-validator:1.4.0')
 
