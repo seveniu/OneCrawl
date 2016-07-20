@@ -37,7 +37,7 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
 jar {
-    baseName = 'web'
+    baseName = 'crawl'
     version = '0.1.0'
 }
 

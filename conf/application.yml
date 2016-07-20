@@ -37,22 +37,13 @@ hello: hello
 spring:
     profiles: home
 thriftServerPort: 20003
-downloadFileStoragePath: download-file/
-downloadFileBloomPath: download-file-bloom/download_file_bloom
-downloaderThreadNum: 20
 
 ---
 spring:
     profiles: dev
 thriftServerPort: 20003
-downloadFileStoragePath: download-file/
-downloadFileBloomPath: download-file-bloom/download_file_bloom
-downloaderThreadNum: 20
 
 ---
 spring:
     profiles: stable
 thriftServerPort: 20003
-downloadFileStoragePath: download-file/
-downloadFileBloomPath: download-file-bloom/download_file_bloom
-downloaderThreadNum: 20

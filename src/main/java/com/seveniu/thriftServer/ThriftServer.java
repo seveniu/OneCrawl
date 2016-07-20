@@ -29,13 +29,10 @@ public class ThriftServer {
 
     @Autowired
     ConsumerManager consumerManager;
+    @Value("${thriftServerPort}")
+    int port;
 
-    @Autowired
-    public ThriftServer(@Value("${thriftServerPort}") int port) {
-        startServer(port);
-    }
-
-    public void startServer(int port) {
+    public void startServer() {
         if (running) {
             logger.warn("thrift server has running ");
             return;

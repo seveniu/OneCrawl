@@ -17,6 +17,7 @@
 package com.seveniu;
 
 import com.seveniu.task.SpiderRegulate;
+import com.seveniu.thriftServer.ThriftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class AppCrawl {
     private Environment environment;
     @Autowired
     private SpiderRegulate spiderRegulate;
+    @Autowired
+    private ThriftServer thriftServer;
 
     public static ApplicationContext getCtx() {
         return ctx;
@@ -55,6 +58,7 @@ public class AppCrawl {
         logger.debug("profile:{}", environment.getProperty("spring.profiles.active"));
         logger.debug("env:{}", Arrays.toString(environment.getActiveProfiles()));
         logger.info("start web port : {}", webPort);
+        thriftServer.startServer();
         spiderRegulate.start();
     }
 
