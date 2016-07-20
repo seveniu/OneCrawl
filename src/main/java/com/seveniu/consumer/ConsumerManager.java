@@ -52,6 +52,9 @@ public class ConsumerManager {
     public boolean regConsumer(Consumer consumer) {
         if (this.consumerMap.containsKey(consumer.getName())) {
             logger.warn("consumer '{}' has reg", consumer.getName());
+            Consumer exist = this.consumerMap.get(consumer.getName());
+            exist.stop();
+            consumerMap.put(consumer.getName(),consumer);
             return false;
         } else {
             this.consumerMap.put(consumer.getName(), consumer);
