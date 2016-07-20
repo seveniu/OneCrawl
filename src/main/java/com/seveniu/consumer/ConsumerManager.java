@@ -37,6 +37,7 @@ public class ConsumerManager {
     private static final String REMOTE_CONFIG_PATH = "consumer/";
     private Logger logger = LoggerFactory.getLogger(ConsumerManager.class);
     private static final int WAIT_THRESHOLD = 1000;
+    // uuid , consumer
     private ConcurrentHashMap<String, Consumer> consumerMap = new ConcurrentHashMap<>();
     private ScheduledExecutorService monitorSchedule;
 
@@ -50,18 +51,17 @@ public class ConsumerManager {
 
 
     public boolean regConsumer(Consumer consumer) {
-        if (this.consumerMap.containsKey(consumer.getName())) {
-            logger.warn("consumer '{}' has reg", consumer.getName());
-            Consumer exist = this.consumerMap.get(consumer.getName());
-            exist.stop();
-            consumerMap.put(consumer.getName(),consumer);
-            return false;
-        } else {
-            this.consumerMap.put(consumer.getName(), consumer);
-            logger.info("reg consumer : {}", consumer);
-            consumer.start();
-            return true;
+        for (Consumer consumer1 : consumerMap.values()) {
+            //删除之前已存在的任务
+            if(consumer1.getName().equals(consumer.getName())) {
+                logger.warn("consumer '{}' has reg", consumer.getName());
+                removeConsumer(consumer1.getUuid());
+            }
         }
+        consumerMap.put(consumer.getUuid(),consumer);
+        logger.info("reg consumer : {}", consumer);
+        consumer.start();
+        return true;
     }
 
     public String regRemoteConsumer(ConsumerConfig remoteConsumerConfig) throws ConnectException, TTransportException {
@@ -168,7 +168,7 @@ public class ConsumerManager {
         consumer.stop();
     }
 
-    public Consumer getConsumer(String uuid) {
+    public Consumer getConsumerByUUID(String uuid) {
         return consumerMap.get(uuid);
     }
 

@@ -72,18 +72,18 @@ public class ThriftServer {
 
         @Override
         public boolean addTask(String uuid, TaskInfo taskInfo) throws TException {
-            return consumerManager.getConsumer(uuid).getTaskManager().addTask(taskInfo);
+            return consumerManager.getConsumerByUUID(uuid).getTaskManager().addTask(taskInfo);
         }
 
         @Override
         public String getRunningTasks(String uuid) throws TException {
-            List<TaskStatistic> taskStatistics = consumerManager.getConsumer(uuid).getTaskManager().getRunningTaskInfo();
+            List<TaskStatistic> taskStatistics = consumerManager.getConsumerByUUID(uuid).getTaskManager().getRunningTaskInfo();
             return Json.toJson(taskStatistics);
         }
 
         @Override
         public String getTaskSummary(String uuid) throws TException {
-            SpiderRegulate.SpiderInfo spiderInfo = consumerManager.getConsumer(uuid).getTaskManager().getSpiderInfo();
+            SpiderRegulate.SpiderInfo spiderInfo = consumerManager.getConsumerByUUID(uuid).getTaskManager().getSpiderInfo();
             return Json.toJson(spiderInfo);
         }
 
