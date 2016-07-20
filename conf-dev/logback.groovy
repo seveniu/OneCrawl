@@ -41,5 +41,5 @@ appender("NOIP-FILE", FileAppender) {
 //root(INFO, ["STDOUT"])
 root(ERROR, ["STDOUT"])
 
-//logger("com.seveniu",DEBUG,["STDOUT","FILE"],false)
-//logger("org.spring",ERROR,["STDOUT"],false)
+logger("com.seveniu",DEBUG,["STDOUT","FILE"],false)
+logger("org.spring",INFO,["STDOUT"],false)

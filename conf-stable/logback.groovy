@@ -23,18 +23,18 @@ appender("STDOUT", ConsoleAppender) {
     }
 }
 appender("FILE", FileAppender) {
-    file = "log/testFile.log"
+    file = "log/debug.log"
     append = true
     encoder(PatternLayoutEncoder) {
         pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     }
 }
 
-appender("IMAGE_RECORD", FileAppender) {
-    file = "log/image_record.log"
+appender("NOIP-FILE", FileAppender) {
+    file = "log/no-ip.log"
     append = true
     encoder(PatternLayoutEncoder) {
-        pattern = "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+        pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     }
 }
 
