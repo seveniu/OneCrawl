@@ -54,7 +54,7 @@ public class ConsumerManager {
             logger.warn("consumer '{}' has reg", consumer.getName());
             return false;
         } else {
-            this.consumerMap.put(consumer.getUuid(), consumer);
+            this.consumerMap.put(consumer.getName(), consumer);
             logger.info("reg consumer : {}", consumer);
             consumer.start();
             return true;
