@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  * Created by seveniu on 6/12/16.
- *
+ * TServiceClientBeanProxyFactory
  */
 
 public class TServiceClientBeanProxyFactory {
@@ -31,6 +31,9 @@ public class TServiceClientBeanProxyFactory {
     private int port;
     private Object clientProxy;
     private Class<?> clazz;
+    private GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    private GenericObjectPool<TServiceClient> pool;
+    private volatile boolean isStop;
 
     //
     private Options option = Options.defaults();
@@ -44,16 +47,14 @@ public class TServiceClientBeanProxyFactory {
 
 
     public TServiceClientBeanProxyFactory() {
+        // FIXME set the object pool configuration
+        poolConfig.setMaxIdle(10);
 
     }
-    public TServiceClientBeanProxyFactory(String host, int port, Class clazz) {
-        this.host = host;
-        this.port = port;
-        this.clazz = clazz;
-    }
+
 
     @SuppressWarnings("unchecked")
-    public <T extends TServiceClient,C> C create(String host, int port, Class<T> clazz) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public <T extends TServiceClient, C> C create(String host, int port, Class<T> clazz) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Class<?>[] interfaces = clazz.getInterfaces();
         Class<C> ifaceClass = null;
@@ -68,16 +69,16 @@ public class TServiceClientBeanProxyFactory {
         Class<TServiceClientFactory<T>> factoryClass = (Class<TServiceClientFactory<T>>) classLoader
                 .loadClass(clazz.getName() + "$Factory");
         TServiceClientFactory<T> clientFactory = factoryClass.newInstance();
-        TServiceClientPoolFactory poolFactory = new TServiceClientPoolFactory(host, port, clientFactory);
+        ThriftClientPoolFactory poolFactory = new ThriftClientPoolFactory(host, port, clientFactory);
 
-        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
-        // FIXME set the object pool configuration
-        // poolConfig.setMaxIdle(maxIdle);
-        GenericObjectPool<TServiceClient> pool = new GenericObjectPool<>(poolFactory, poolConfig);
+        pool = new GenericObjectPool<>(poolFactory, poolConfig);
 
-        clientProxy = Proxy.newProxyInstance(classLoader, new Class[] { ifaceClass }, new InvocationHandler() {
+        clientProxy = Proxy.newProxyInstance(classLoader, new Class[]{ifaceClass}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if(isStop) {
+                    throw new IllegalAccessException("client close");
+                }
                 TServiceClient client = pool.borrowObject();
                 try {
                     return method.invoke(client, args);
@@ -100,7 +101,12 @@ public class TServiceClientBeanProxyFactory {
             }
 
         });
-        return (C)clientProxy;
+        return (C) clientProxy;
+    }
+
+    public void close() {
+        pool.close();
+        isStop = true;
     }
 
     private void reconnectOrThrowException(TTransport transport) throws TTransportException {
@@ -114,8 +120,7 @@ public class TServiceClientBeanProxyFactory {
                 transport.open();
                 logger.info("Reconnection successful /{}:{}", host, port);
                 break;
-            }
-            catch (TTransportException e) {
+            } catch (TTransportException e) {
                 logger.error("Error while reconnecting /{}:{}:", host, port, e);
                 errors++;
 
@@ -123,7 +128,7 @@ public class TServiceClientBeanProxyFactory {
                     try {
                         long timeBetweenRetries = option.getTimeBetweenRetries();
                         logger.debug("Sleeping for %s milliseconds before retrying /{}:{}",
-                                        timeBetweenRetries, host, port);
+                                timeBetweenRetries, host, port);
                         Thread.sleep(timeBetweenRetries);
                     } catch (InterruptedException e2) {
                         throw new RuntimeException(e);
@@ -143,13 +148,10 @@ public class TServiceClientBeanProxyFactory {
         private long timeBetweenRetries;
 
         /**
-         *
-         * @param numRetries
-         *            the maximum number of times to try reconnecting before
-         *            giving up and throwing an exception
-         * @param timeBetweenRetries
-         *            the number of milliseconds to wait in between reconnection
-         *            attempts.
+         * @param numRetries         the maximum number of times to try reconnecting before
+         *                           giving up and throwing an exception
+         * @param timeBetweenRetries the number of milliseconds to wait in between reconnection
+         *                           attempts.
          */
         public Options(int numRetries, long timeBetweenRetries) {
             this.numRetries = numRetries;

@@ -86,12 +86,14 @@ public class ConsumerManager {
             Consumer consumer = getConsumerByName(name);
             if (consumer != null) { //已存在
                 consumer.changeClient(consumerClient);
+                consumerMap.remove(consumer.getUuid());
                 logger.warn("remote consumer '{}' has reg, change client", name);
             } else {
                 consumer = new Consumer(name, consumerClient);
-                consumerMap.put(consumer.getUuid(), consumer);
+                consumer.start();
                 logger.info("reg remote consumer : {}", consumer);
             }
+            consumerMap.put(consumer.getUuid(), consumer);
             return consumer.getUuid();
         }
     }

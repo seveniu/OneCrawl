@@ -7,8 +7,6 @@ import com.seveniu.task.TaskStatistic;
 import com.seveniu.thriftServer.ConsumerConfig;
 import com.seveniu.util.TServiceClientBeanProxyFactory;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -23,49 +21,33 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private ConsumerConfig remoteConsumerConfig;
 
-    private ConsumerThrift.Iface thriftClient;
+    private ConsumerThrift.Iface client;
 
     public ThriftRemoteConsumer(ConsumerConfig config) throws TTransportException {
         this.remoteConsumerConfig = config;
         this.build(config.getHost(), config.getPort());
     }
 
-    public void build(String host, int port) throws TTransportException {
+    private TServiceClientBeanProxyFactory clientBeanProxyFactory;
+
+    private void build(String host, int port) throws TTransportException {
         TTransport transport = new TSocket(host, port);
         transport.open();
 
         logger.info("template client connect /{}:{}", host, port);
 
-        TProtocol protocol = new TBinaryProtocol(transport);
-//        this.originClient = new ConsumerThrift.Client(protocol);
         try {
-            this.thriftClient = new TServiceClientBeanProxyFactory().create(host, port, ConsumerThrift.Client.class);
+            clientBeanProxyFactory = new TServiceClientBeanProxyFactory();
+            this.client = clientBeanProxyFactory.create(host, port, ConsumerThrift.Client.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        return ReconnectThriftClient.wrap(originClient, new ReconnectThriftClient.Listener() {
-//            @Override
-//            public void reconnect() {
-//
-//            }
-//
-//            @Override
-//            public void reconnectSuccess() {
-//
-//            }
-//
-//            @Override
-//            public void reconnectFailed() {
-//                logger.warn("thrift reconnect error");
-//                stop();
-//            }
-//        });
     }
 
     @Override
     public boolean has(String url) {
         try {
-            return thriftClient.has(url);
+            return client.has(url);
         } catch (Exception e) {
             e.printStackTrace();
             logger.warn("url check warn : {}", e.getMessage());
@@ -77,7 +59,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     public void done(Node node) {
         String data = Json.toJson(node);
         try {
-            thriftClient.done(data);
+            client.done(data);
         } catch (Exception e) {
             e.printStackTrace();
             logger.warn("consumer done warn : {}", e.getMessage());
@@ -87,7 +69,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     @Override
     public void statistic(TaskStatistic statistic) {
         try {
-            thriftClient.statistic(Json.toJson(statistic));
+            client.statistic(Json.toJson(statistic));
         } catch (Exception e) {
             e.printStackTrace();
             logger.warn("get task statistic warn : {}", e.getMessage());
@@ -97,7 +79,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     @Override
     public void taskStatusChange(String taskId, TaskStatus taskStatus) {
         try {
-            thriftClient.taskStatusChange(taskId, taskStatus);
+            client.taskStatusChange(taskId, taskStatus);
         } catch (TException e) {
             logger.warn("get task status change error : {}", e.getMessage());
             e.printStackTrace();
@@ -106,7 +88,9 @@ public class ThriftRemoteConsumer implements ConsumerClient {
 
     @Override
     public void stop() {
-
+        this.client = null;
+        clientBeanProxyFactory.close();
+        logger.info("consumer : {} close", remoteConsumerConfig.getName());
     }
 
 

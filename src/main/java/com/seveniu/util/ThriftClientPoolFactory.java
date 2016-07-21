@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by seveniu on 6/12/16.
  */
-public class TServiceClientPoolFactory<T extends TServiceClient> extends BasePooledObjectFactory<T> {
+public class ThriftClientPoolFactory<T extends TServiceClient> extends BasePooledObjectFactory<T> {
 
-    private final static Logger logger = LoggerFactory.getLogger(TServiceClientPoolFactory.class);
+    private final static Logger logger = LoggerFactory.getLogger(ThriftClientPoolFactory.class);
 
     private String host;
     private int port;
@@ -27,7 +27,7 @@ public class TServiceClientPoolFactory<T extends TServiceClient> extends BasePoo
 
     private AtomicInteger counter = new AtomicInteger(1);
 
-    public TServiceClientPoolFactory(String host, int port, TServiceClientFactory<T> clientFactory) {
+    public ThriftClientPoolFactory(String host, int port, TServiceClientFactory<T> clientFactory) {
         this.clientFactory = clientFactory;
         this.host = host;
         this.port = port;
