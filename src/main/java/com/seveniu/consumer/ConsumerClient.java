@@ -7,7 +7,7 @@ import com.seveniu.task.TaskStatistic;
 /**
  * Created by seveniu on 7/5/16.
  */
-public interface ConsumerInter {
+public interface ConsumerClient {
 
     boolean has(String url);
 
@@ -16,4 +16,6 @@ public interface ConsumerInter {
     void statistic(TaskStatistic taskStatistic);
 
     void taskStatusChange(String taskId, TaskStatus taskStatus);
+
+    void stop();
 }

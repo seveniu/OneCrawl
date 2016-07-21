@@ -1,7 +1,7 @@
 package com.seveniu.consumer.remote.thrift;
 
 import com.seveniu.common.json.Json;
-import com.seveniu.consumer.Consumer;
+import com.seveniu.consumer.ConsumerClient;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
 import com.seveniu.thriftServer.ConsumerConfig;
@@ -12,21 +12,22 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by seveniu on 5/24/16.
  * RemoteConsumer
  */
-public class ThriftRemoteConsumer extends Consumer {
-
+public class ThriftRemoteConsumer implements ConsumerClient {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private ConsumerConfig remoteConsumerConfig;
 
     private ConsumerThrift.Iface thriftClient;
 
     public ThriftRemoteConsumer(ConsumerConfig config) throws TTransportException {
-        super(config.getName());
         this.remoteConsumerConfig = config;
-        this.build(config.getHost(),config.getPort());
+        this.build(config.getHost(), config.getPort());
     }
 
     public void build(String host, int port) throws TTransportException {
@@ -38,7 +39,7 @@ public class ThriftRemoteConsumer extends Consumer {
         TProtocol protocol = new TBinaryProtocol(transport);
 //        this.originClient = new ConsumerThrift.Client(protocol);
         try {
-            this.thriftClient = new TServiceClientBeanProxyFactory().create(host,port,ConsumerThrift.Client.class);
+            this.thriftClient = new TServiceClientBeanProxyFactory().create(host, port, ConsumerThrift.Client.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -96,16 +97,16 @@ public class ThriftRemoteConsumer extends Consumer {
     @Override
     public void taskStatusChange(String taskId, TaskStatus taskStatus) {
         try {
-            thriftClient.taskStatusChange(taskId,taskStatus);
+            thriftClient.taskStatusChange(taskId, taskStatus);
         } catch (TException e) {
             logger.warn("get task status change error : {}", e.getMessage());
             e.printStackTrace();
         }
     }
 
-
     @Override
-    protected void stop0() {
+    public void stop() {
+
     }
 
 

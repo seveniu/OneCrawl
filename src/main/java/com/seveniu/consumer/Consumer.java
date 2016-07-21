@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
  * Created by seveniu on 5/13/16.
  * Consumer
  */
-public abstract class Consumer implements ConsumerInter, ShutdownHook {
-    protected Logger logger;
+public class Consumer implements ShutdownHook {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String uuid;
     private String name;
@@ -26,17 +26,17 @@ public abstract class Consumer implements ConsumerInter, ShutdownHook {
     private LinkedBlockingQueue<Runnable> dataQueue;
 
     private ExecutorService transferService;
+    private ConsumerClient client;
     protected volatile STATUS status = STATUS.UN_START;
 
-    public Consumer(String name) {
+    public Consumer(String name, ConsumerClient consumerClient) {
         this.name = name;
         this.uuid = UUID.randomUUID().toString();
-//        this.logger = LoggerFactory.getLogger(this.getClass() + "-" + name);
-        this.logger = LoggerFactory.getLogger(this.getClass());
+        this.client = consumerClient;
     }
 
 
-    public String getUuid() {
+    String getUuid() {
         return uuid;
     }
 
@@ -69,12 +69,30 @@ public abstract class Consumer implements ConsumerInter, ShutdownHook {
             if (Thread.currentThread().isInterrupted()) {
                 return;
             }
-            done(node);
+            client.done(node);
         });
+    }
+
+    public ConsumerClient getClient() {
+        return client;
+    }
+
+    void changeClient(ConsumerClient client) {
+        this.uuid = UUID.randomUUID().toString();
+        this.client.stop();
+        this.client = client;
     }
 
     int waitSize() {
         return dataQueue.size();
+    }
+
+    public void stop() {
+        logger.info("consumer : {} --- {}   stop ~~~~", name, uuid);
+        status = STATUS.STOP;
+        transferService.shutdownNow();
+        this.taskManager.stop();
+        this.client.stop();
     }
 
     @Override
@@ -84,16 +102,6 @@ public abstract class Consumer implements ConsumerInter, ShutdownHook {
                 ", type : " + this.getClass() +
                 "}";
     }
-
-    public void stop() {
-        logger.info("consumer stop ~~~~");
-        status = STATUS.STOP;
-        transferService.shutdownNow();
-        this.taskManager.stop();
-        stop0();
-    }
-
-    protected abstract void stop0();
 
     @Override
     public void shutdown() {

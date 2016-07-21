@@ -64,7 +64,7 @@ public class MultiListContentProcessor extends MyPageProcessor {
         // 跳转链接
         if (parseResult.hasLinks()) {
             for (Link targetLink : parseResult.getTargetLinks()) {
-                if (consumer.has(targetLink.getUrl())) { //
+                if (consumer.getClient().has(targetLink.getUrl())) { //
                     logger.debug("url is repeat : {} ", targetLink);
                     statistic.addRepeatUrlCount(1);
                 } else {

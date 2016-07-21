@@ -1,7 +1,7 @@
 package com.seveniu.consumer.remote;
 
 import com.seveniu.common.json.Json;
-import com.seveniu.consumer.Consumer;
+import com.seveniu.consumer.ConsumerClient;
 import com.seveniu.consumer.remote.thrift.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
@@ -13,6 +13,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,40 +23,31 @@ import java.io.InputStream;
  * Created by seveniu on 5/24/16.
  * RemoteConsumer
  */
-public class HttpRemoteConsumer extends Consumer {
-
+public class HttpRemoteConsumer implements ConsumerClient {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private ConsumerConfig remoteConsumerConfig;
 
     private RemoteRequest remoteRequest;
 
     public HttpRemoteConsumer(ConsumerConfig remoteConsumerConfig) {
-        super(remoteConsumerConfig.getName());
         this.remoteConsumerConfig = remoteConsumerConfig;
         this.remoteRequest = new RemoteRequest();
     }
 
     @Override
     public boolean has(String url) {
-        if (status == STATUS.STOP) {
-            return true;
-        }
+
         return Boolean.valueOf(remoteRequest.send(remoteConsumerConfig.getDuplicateUrl(), url));
     }
 
     @Override
     public void done(Node node) {
-        if (status == STATUS.STOP) {
-            return;
-        }
         remoteRequest.send(remoteConsumerConfig.getDoneUrl(), Json.toJson(node));
     }
 
 
     @Override
     public void statistic(TaskStatistic statistic) {
-        if (status == STATUS.STOP) {
-            return;
-        }
         remoteRequest.send(remoteConsumerConfig.getStatisticUrl(), Json.toJson(statistic));
     }
 
@@ -64,7 +57,7 @@ public class HttpRemoteConsumer extends Consumer {
     }
 
     @Override
-    public void stop0() {
+    public void stop() {
         try {
             remoteRequest.close();
         } catch (IOException e) {

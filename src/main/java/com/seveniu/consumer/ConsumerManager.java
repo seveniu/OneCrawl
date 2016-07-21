@@ -48,44 +48,52 @@ public class ConsumerManager {
         regRemoteConsumerFromFile();
     }
 
-
+    private final Object regLock = new Object();
 
     public boolean regConsumer(Consumer consumer) {
-        for (Consumer consumer1 : consumerMap.values()) {
-            //删除之前已存在的任务
-            if(consumer1.getName().equals(consumer.getName())) {
-                logger.warn("consumer '{}' has reg", consumer.getName());
-                removeConsumer(consumer1.getUuid());
+        synchronized (regLock) {
+            for (Consumer consumer1 : consumerMap.values()) {
+                //删除之前已存在的任务
+                if (consumer1.getName().equals(consumer.getName())) {
+                    logger.warn("consumer '{}' has reg", consumer.getName());
+                    removeConsumer(consumer1.getUuid());
+                }
             }
+            consumerMap.put(consumer.getUuid(), consumer);
+            logger.info("reg consumer : {}", consumer);
+            consumer.start();
+            return true;
         }
-        consumerMap.put(consumer.getUuid(),consumer);
-        logger.info("reg consumer : {}", consumer);
-        consumer.start();
-        return true;
     }
 
+
     public String regRemoteConsumer(ConsumerConfig remoteConsumerConfig) throws ConnectException, TTransportException {
-        String name = remoteConsumerConfig.getName();
-        if (this.consumerMap.containsKey(name)) {
-            logger.warn("consumer '{}' has reg", name);
-            return null;
-        }
-        Consumer consumer;
-        switch (remoteConsumerConfig.getType()) {
-            case "http":
-                consumer = new HttpRemoteConsumer(remoteConsumerConfig);
-                break;
-            case "thrift":
-                consumer = new ThriftRemoteConsumer(remoteConsumerConfig);
-                break;
-            default:
-                logger.error("consumer is null ");
-                throw new IllegalArgumentException("remote type is error. type : " + remoteConsumerConfig.getType());
-        }
-        if(regConsumer(consumer)) {
+        synchronized (regLock) {
+            ConsumerClient consumerClient;
+            switch (remoteConsumerConfig.getType()) {
+                case "http":
+                    consumerClient = new HttpRemoteConsumer(remoteConsumerConfig);
+                    break;
+                case "thrift":
+                    consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig);
+                    break;
+                default:
+                    logger.error("consumer is null ");
+                    throw new IllegalArgumentException("remote type is error. type : " + remoteConsumerConfig.getType());
+            }
+
+            String name = remoteConsumerConfig.getName();
+            Consumer consumer = getConsumerByName(name);
+            if (consumer != null) { //已存在
+                consumer.changeClient(consumerClient);
+                logger.warn("remote consumer '{}' has reg, change client", name);
+            } else {
+                consumer = new Consumer(name, consumerClient);
+                consumerMap.put(consumer.getUuid(), consumer);
+                logger.info("reg remote consumer : {}", consumer);
+            }
             return consumer.getUuid();
         }
-        return null;
     }
 
     private void regRemoteConsumerFromFile() {
@@ -114,7 +122,8 @@ public class ConsumerManager {
             }
         }
     }
-    public static ConsumerConfig fromJson(String data) throws IllegalArgumentException {
+
+    private static ConsumerConfig fromJson(String data) throws IllegalArgumentException {
         ConsumerConfig config = Json.toObject(data, ConsumerConfig.class);
         String type = config.getType();
         if (StringUtils.isEmpty(config.getName())) {
@@ -153,7 +162,7 @@ public class ConsumerManager {
             if (StringUtils.isEmpty(config.getHost())) {
                 throw new IllegalArgumentException("host is empty");
             }
-            if (config.getPort()== 0) {
+            if (config.getPort() == 0) {
                 throw new IllegalArgumentException("port is not set");
             }
             if (!InetAddressValidator.getInstance().isValid(config.getHost())) {
@@ -163,13 +172,23 @@ public class ConsumerManager {
         }
         return config;
     }
-    public void removeConsumer(String uuid) {
+
+    private void removeConsumer(String uuid) {
         Consumer consumer = this.consumerMap.remove(uuid);
         consumer.stop();
     }
 
     public Consumer getConsumerByUUID(String uuid) {
         return consumerMap.get(uuid);
+    }
+
+    private Consumer getConsumerByName(String name) {
+        for (Consumer consumer1 : consumerMap.values()) {
+            if (consumer1.getName().equals(name)) {
+                return consumer1;
+            }
+        }
+        return null;
     }
 
     public Collection<Consumer> getAllConsumer() {

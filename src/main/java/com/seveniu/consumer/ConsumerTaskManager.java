@@ -164,23 +164,23 @@ public class ConsumerTaskManager {
 
 
     private class SpiderThreadPoolExecutor extends ThreadPoolExecutor {
-        public SpiderThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+        SpiderThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
             super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
         }
 
         @Override
         protected void beforeExecute(Thread t, Runnable r) {
             SpiderTask spiderTask = (SpiderTask) r;
-            consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
+            consumer.getClient().taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
             runningQueue.add((MySpider) r);
         }
 
         @Override
         protected void afterExecute(Runnable r, Throwable t) {
             MySpider spiderTask = (MySpider) r;
-            consumer.taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.STOP);
+            consumer.getClient().taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.STOP);
 
-            consumer.statistic(spiderTask.getTaskStatistic());
+            consumer.getClient().statistic(spiderTask.getTaskStatistic());
             removerStopSpider(spiderTask);
             runningQueue.remove(r);
         }
