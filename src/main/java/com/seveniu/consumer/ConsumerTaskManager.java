@@ -112,12 +112,26 @@ public class ConsumerTaskManager {
     }
 
 
+    private final Object execTaskLock = new Object();
+
     private void execTask(SpiderTask spiderTask) {
-        if (stop) {
-            return;
+        synchronized (execTaskLock) {
+
+            if (stop) {
+                return;
+            }
+
+            // 如果已存在就返回
+            for (MySpider mySpider : runningQueue) {
+                if (mySpider.taskInfo().getId().equals(spiderTask.getId())) {
+                    logger.info("task : {} is running", spiderTask.getId());
+                    return;
+                }
+            }
+            runningQueue.add((MySpider) spiderTask);
+            spiderExecServer.execute(spiderTask);
+            logger.info("consumer exec task : {}", spiderTask.getId());
         }
-        spiderExecServer.execute(spiderTask);
-        logger.info("consumer exec task : {}", spiderTask.getId());
     }
 
 
@@ -172,7 +186,6 @@ public class ConsumerTaskManager {
         protected void beforeExecute(Thread t, Runnable r) {
             SpiderTask spiderTask = (SpiderTask) r;
             consumer.getClient().taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
-            runningQueue.add((MySpider) r);
         }
 
         @Override
