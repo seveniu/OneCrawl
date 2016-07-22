@@ -78,6 +78,9 @@ public class TaskStatistic implements DownloaderErrorListener {
         return successUrlCount.addAndGet(num);
     }
 
+    public int addNextUrlCount(int num) {
+        return createNextUrlCount.addAndGet(num);
+    }
     public int addDoneUrlCount(int num) {
         return doneUrlCount.addAndGet(num);
     }

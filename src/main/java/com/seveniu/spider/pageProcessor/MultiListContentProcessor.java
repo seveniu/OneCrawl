@@ -43,13 +43,17 @@ public class MultiListContentProcessor extends MyPageProcessor {
         Integer curSerialNum = (Integer) page.getRequest().getExtra(SERIAL_NUM);
         int pagesNum = pagesTemplate.pagesNum();
         if (curSerialNum < pagesNum - 1) { // 跳转页面
-            targetPage(page, parseResult, curSerialNum);
+            boolean createNode = false;
+            if (curSerialNum + 2 == pagesNum) {// 倒数第二页
+                createNode = true;
+            }
+            targetPage(page, parseResult, curSerialNum, createNode);
         } else if (curSerialNum == pagesNum - 1) {
             contentPage(page, parseResult, curSerialNum);
         }
     }
 
-    private void targetPage(Page page, ParseResult parseResult, Integer curSerialNum) {
+    private void targetPage(Page page, ParseResult parseResult, Integer curSerialNum, boolean createNode) {
 //        String url = page.getUrl().get();
         // 处理解析的结果
         // 下一页链接
@@ -68,8 +72,12 @@ public class MultiListContentProcessor extends MyPageProcessor {
                     logger.debug("url is repeat : {} ", targetLink);
                     statistic.addRepeatUrlCount(1);
                 } else {
-                    Node node = new Node(targetLink.getUrl(), taskId);
-                    page.addTargetRequest(new Request(targetLink.getUrl()).putExtra(CONTEXT_NODE, node).putExtra(SERIAL_NUM, curSerialNum + 1));
+                    Request request = new Request(targetLink.getUrl()).putExtra(SERIAL_NUM, curSerialNum + 1);
+                    if (createNode) {
+                        Node node = new Node(targetLink.getUrl(), taskId);
+                        request.putExtra(CONTEXT_NODE, node);
+                    }
+                    page.addTargetRequest(request);
                 }
             }
             // 统计
