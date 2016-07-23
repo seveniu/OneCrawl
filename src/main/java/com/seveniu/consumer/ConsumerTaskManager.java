@@ -71,6 +71,13 @@ public class ConsumerTaskManager {
             return false;
         } else {
             synchronized (addLock) {
+                // 如果已存在就返回
+                for (MySpider mySpider : runningQueue) {
+                    if (mySpider.taskInfo().getId().equals(taskInfo.getId())) {
+                        logger.warn("consumer : {} task : {} is running", consumer.getName(), taskInfo.getId());
+                        return false;
+                    }
+                }
 
                 String spiderTaskId = generateTaskId(consumer, taskInfo);
                 SpiderTask spiderTask = allSpider.get(spiderTaskId);
@@ -121,13 +128,7 @@ public class ConsumerTaskManager {
                 return;
             }
 
-            // 如果已存在就返回
-            for (MySpider mySpider : runningQueue) {
-                if (mySpider.taskInfo().getId().equals(spiderTask.getId())) {
-                    logger.info("task : {} is running", spiderTask.getId());
-                    return;
-                }
-            }
+
             runningQueue.add((MySpider) spiderTask);
             spiderExecServer.execute(spiderTask);
             logger.info("consumer exec task : {}", spiderTask.getId());
