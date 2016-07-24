@@ -1,6 +1,6 @@
 package com.seveniu.consumer;
 
-import com.seveniu.consumer.remote.thrift.TaskStatus;
+import com.seveniu.def.TaskStatus;
 import com.seveniu.spider.MySpider;
 import com.seveniu.spider.SpiderFactory;
 import com.seveniu.spider.TemplateType;
@@ -11,7 +11,6 @@ import com.seveniu.template.PagesTemplate;
 import com.seveniu.thriftServer.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.codecraft.webmagic.Spider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,64 +57,53 @@ public class ConsumerTaskManager {
 
     private final Object addLock = new Object();
 
-    public boolean addTask(TaskInfo taskInfo) {
+    /**
+     * 返回 任务状态
+     *
+     * @param taskInfo
+     * @return
+     */
+    public TaskStatus addTask(TaskInfo taskInfo) {
         PagesTemplate pagesTemplate;
         try {
             pagesTemplate = PagesTemplate.fromJson(taskInfo.getTemplateId(), taskInfo.getTemplate());
         } catch (Exception e) {
             logger.warn("task: {} ,template : {} parse error", taskInfo.getId(), taskInfo.getTemplateId());
-            return false;
+            return TaskStatus.FAIL;
         }
         if (pagesTemplate == null) {
             logger.error("consumer {} 's template {} is error", consumer.getName(), taskInfo.getTemplateId());
-            return false;
+            return TaskStatus.FAIL;
         } else {
             synchronized (addLock) {
                 // 如果已存在就返回
                 for (MySpider mySpider : runningQueue) {
                     if (mySpider.taskInfo().getId().equals(taskInfo.getId())) {
                         logger.warn("consumer : {} task : {} is running", consumer.getName(), taskInfo.getId());
-                        return false;
+                        return TaskStatus.RUNNING;
                     }
                 }
 
-                String spiderTaskId = generateTaskId(consumer, taskInfo);
-                SpiderTask spiderTask = allSpider.get(spiderTaskId);
+                String spiderId = generateTaskId(consumer, taskInfo);
+                SpiderTask spiderTask = allSpider.get(spiderId);
+
                 if (spiderTask != null) {
-                    if (spiderTask.getStatus() == Spider.Status.Running) {
-                        logger.info("spider task : {}  has running", spiderTaskId);
-                    } else if (spiderTask.getStatus() == Spider.Status.Init) {
-                        logger.info("spider task : {}  is waiting", spiderTaskId);
-                    } else {
-                        logger.info("spider task : {}  is running ....", spiderTaskId);
-                    }
-                    return false;
+                    return TaskStatus.WAIT;
                 }
 
                 try {
                     TemplateType templateType = TemplateType.get(taskInfo.getTemplateType().getValue());
-                    MySpider mySpider = SpiderFactory.getSpider(spiderTaskId, templateType, taskInfo, consumer, pagesTemplate);
-                    allSpider.put(taskInfo.getId(), mySpider);
+                    MySpider mySpider = SpiderFactory.getSpider(spiderId, templateType, taskInfo, consumer, pagesTemplate);
+                    allSpider.put(spiderId, mySpider);
                     execTask(mySpider);
-                    return true;
+
+                    return TaskStatus.WAIT;
                 } catch (IllegalArgumentException e) {
                     logger.error("template type error : {}", e.getMessage());
-                    return false;
+                    return TaskStatus.FAIL;
                 }
             }
         }
-    }
-
-    private boolean hasWait(String spiderTaskId) {
-        for (Runnable runnable : waitTaskQueue) {
-            SpiderTask spiderTask = (SpiderTask) runnable;
-            if (spiderTask.getId().equals(spiderTaskId)) {
-                logger.warn("spiderTask {} in wait", spiderTaskId);
-                return true;
-            }
-        }
-
-        return false;
     }
 
 
@@ -128,8 +116,6 @@ public class ConsumerTaskManager {
                 return;
             }
 
-
-            runningQueue.add((MySpider) spiderTask);
             spiderExecServer.execute(spiderTask);
             logger.info("consumer exec task : {}", spiderTask.getId());
         }
@@ -185,6 +171,14 @@ public class ConsumerTaskManager {
 
         @Override
         protected void beforeExecute(Thread t, Runnable r) {
+
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            runningQueue.add((MySpider) r);
             SpiderTask spiderTask = (SpiderTask) r;
             consumer.getClient().taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
         }

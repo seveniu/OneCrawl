@@ -14,7 +14,7 @@ public class Node {
     private String taskId;
     private List<PageResult> pages = new ArrayList<>();
 
-    public Node(String url,String taskId) {
+    public Node(String url, String taskId) {
         this.url = url;
         this.taskId = taskId;
     }

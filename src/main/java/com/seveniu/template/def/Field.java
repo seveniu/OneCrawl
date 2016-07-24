@@ -116,7 +116,7 @@ public class Field {
         SimpleModule module = new SimpleModule();
         module.addDeserializer(Field.class, new OldFieldDeserializer());
         mapper.registerModule(module);
-        return mapper.readValue(json,Field.class);
+        return mapper.readValue(json, Field.class);
     }
 
     public static final class OldFieldDeserializer
@@ -139,7 +139,7 @@ public class Field {
             field.setXpath(xpath.asText());
 
             JsonNode regex = node.get("regExp");
-            if(regex.isArray()) {
+            if (regex.isArray()) {
                 List<String> temp = new ArrayList<>(regex.size());
                 for (JsonNode jsonNode : regex) {
                     temp.add(jsonNode.textValue());
@@ -149,7 +149,7 @@ public class Field {
 
 
             JsonNode defaultValueNode = node.get("defaultValue");
-            if(defaultValueNode.getNodeType() == JsonNodeType.STRING){
+            if (defaultValueNode.getNodeType() == JsonNodeType.STRING) {
                 field.setDefaultValue(defaultValueNode.textValue());
             }
 

@@ -21,12 +21,13 @@ public class SpiderMonitorApi {
 
     @Autowired
     SpiderRegulate spiderRegulate;
+
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = "text/json;charset=UTF-8")
     @ResponseBody
     public String getAll() {
-        Map<String,Object> map = new HashMap<>();
-        map.put("code",20000);
-        map.put("result",spiderRegulate.consumerSpiderInfo());
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", 20000);
+        map.put("result", spiderRegulate.consumerSpiderInfo());
         return Json.toJson(map);
     }
 }

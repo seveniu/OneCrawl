@@ -25,7 +25,7 @@ public class UrlUtils {
      * <br>
      * Borrowed from Jsoup.
      *
-     * @param url url
+     * @param url   url
      * @param refer refer
      * @return canonicalizeUrl
      */
@@ -50,7 +50,6 @@ public class UrlUtils {
     }
 
     /**
-     *
      * @param url url
      * @return new url
      */

@@ -168,6 +168,7 @@ public class ApiResult {
     public static ApiResult get() {
         return new ApiResult();
     }
+
     public static ApiResult success() {
         return ApiResult.get().setCode(SUCCESS);
     }
@@ -175,6 +176,7 @@ public class ApiResult {
     public static ApiResult exception(Exception e) {
         return ApiResult.get().setCode(EXCEPTION).setMessage(e.getMessage());
     }
+
     public String toJson() {
         return Json.toJson(this);
     }

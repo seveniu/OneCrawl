@@ -1,6 +1,6 @@
 package com.seveniu.consumer;
 
-import com.seveniu.consumer.remote.thrift.TaskStatus;
+import com.seveniu.def.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
 

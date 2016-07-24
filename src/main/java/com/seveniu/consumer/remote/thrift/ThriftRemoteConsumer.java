@@ -2,6 +2,7 @@ package com.seveniu.consumer.remote.thrift;
 
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.ConsumerClient;
+import com.seveniu.def.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
 import com.seveniu.thriftServer.ConsumerConfig;

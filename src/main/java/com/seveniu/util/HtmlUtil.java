@@ -15,6 +15,7 @@ public class HtmlUtil {
         html = delHtmlBlankLines(html);
         return html;
     }
+
     public static String getSimpleHtml(String html) {
         html = delHTMLTagsWithContent(html);
         html = removeIdAndClass(html);

@@ -27,8 +27,8 @@ public class AllInterceptor implements HandlerInterceptor {
         }
 
         if ((request.getRequestURI().equals("/login")
-                ||request.getRequestURI().startsWith("/tags/dic")
-                ||request.getRequestURI().startsWith("/api")
+                || request.getRequestURI().startsWith("/tags/dic")
+                || request.getRequestURI().startsWith("/api")
         ))
             return true;
 

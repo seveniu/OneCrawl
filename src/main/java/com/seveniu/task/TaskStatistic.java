@@ -81,6 +81,7 @@ public class TaskStatistic implements DownloaderErrorListener {
     public int addNextUrlCount(int num) {
         return createNextUrlCount.addAndGet(num);
     }
+
     public int addDoneUrlCount(int num) {
         return doneUrlCount.addAndGet(num);
     }
@@ -90,14 +91,14 @@ public class TaskStatistic implements DownloaderErrorListener {
     }
 
     public int addNetErrorUrlCount(String[] urls) {
-        if(netErrorUrlList.size() < NETWORK_ERROR_URL_LIST_SIZE_MAX) {
+        if (netErrorUrlList.size() < NETWORK_ERROR_URL_LIST_SIZE_MAX) {
             Collections.addAll(netErrorUrlList, urls);
         }
         return netErrorUrlCount.addAndGet(urls.length);
     }
 
     public int addParseErrorCount(String[] urls) {
-        if(netErrorUrlList.size() < PARSE_ERROR_URL_LIST_SIZE_MAX) {
+        if (netErrorUrlList.size() < PARSE_ERROR_URL_LIST_SIZE_MAX) {
             Collections.addAll(parseErrorUrlList, urls);
         }
         return parseErrorCount.addAndGet(urls.length);

@@ -28,13 +28,18 @@
     OFF = 1,
     ON = 2
  }
+
+  enum TaskStatus {
+     WAIT,RUNNING,STOP,FAIL
+  }
+
  enum TemplateType{
     MULTI_LAYER_CONTENT = 1,
     TEST_SINGLE_PAGE = 2
  }
  service CrawlThrift{
   string reg(1:ConsumerConfig consumerConfig)// 返回 uuid
-  bool addTask(1:string uuid,2:TaskInfo task)
+  TaskStatus addTask(1:string uuid,2:TaskInfo task)
   string getRunningTasks(1:string uuid)
   string getTaskSummary(1:string uuid)
  }

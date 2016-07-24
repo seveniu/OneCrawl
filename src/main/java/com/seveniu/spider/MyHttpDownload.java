@@ -214,7 +214,7 @@ public class MyHttpDownload extends HttpClientDownloader {
         if (charset == null) {
             charset = getHtmlCharset(httpResponse, contentBytes);
         }
-        if (charset!= null) {
+        if (charset != null) {
             return new String(contentBytes, charset);
         } else {
             logger.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()", Charset.defaultCharset());
@@ -253,7 +253,7 @@ public class MyHttpDownload extends HttpClientDownloader {
                 }
             }
 
-            if(charset.toUpperCase().equals("GB2312")) {
+            if (charset.toUpperCase().equals("GB2312")) {
                 charset = "GBK";
             }
             this.logger.debug("Auto get charset: {}", charset);

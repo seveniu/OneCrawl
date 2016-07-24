@@ -30,14 +30,15 @@ public class SessionUtil {
         session.setAttribute(SESSION_USER_ID, userId);
         session.setAttribute(SESSION_LOGIN_VALID, true);
     }
-    public static void login(HttpSession session, String username, int userId,  boolean isAdmin, boolean isOuter) {
+
+    public static void login(HttpSession session, String username, int userId, boolean isAdmin, boolean isOuter) {
         session.setAttribute(SESSION_USER_NAME, username);
         session.setAttribute(SESSION_USER_ID, userId);
         session.setAttribute(SESSION_IS_ADMIN, isAdmin);
         session.setAttribute(SESSION_IS_OUTER, isOuter);
         session.setAttribute(SESSION_LOGIN_VALID, true);
     }
-    
+
     public static void destroy(HttpSession session) {
         session.removeAttribute(SESSION_USER_NAME);
         session.removeAttribute(SESSION_USER_ID);
@@ -105,7 +106,7 @@ public class SessionUtil {
             byte[] array = md.digest(md5.getBytes());
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
             }
             return sb.toString();
         } catch (java.security.NoSuchAlgorithmException e) {

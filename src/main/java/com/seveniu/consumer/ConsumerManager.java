@@ -85,14 +85,13 @@ public class ConsumerManager {
             String name = remoteConsumerConfig.getName();
             Consumer consumer = getConsumerByName(name);
             if (consumer != null) { //已存在
-                consumer.changeClient(consumerClient);
+                consumer.stop();
                 consumerMap.remove(consumer.getUuid());
-                logger.warn("remote consumer '{}' has reg, change client", name);
-            } else {
-                consumer = new Consumer(name, consumerClient);
-                consumer.start();
-                logger.info("reg remote consumer : {}", consumer);
+                logger.warn("remote consumer '{}' has reg, remove old", name);
             }
+            consumer = new Consumer(name, consumerClient);
+            consumer.start();
+            logger.info("reg remote consumer : {}", consumer);
             consumerMap.put(consumer.getUuid(), consumer);
             return consumer.getUuid();
         }

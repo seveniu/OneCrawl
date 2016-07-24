@@ -23,10 +23,11 @@ public class Consumer implements ShutdownHook {
     private String name;
 
     private ConsumerTaskManager taskManager;
-    private LinkedBlockingQueue<Runnable> dataQueue;
-
-    private ExecutorService transferService;
     private ConsumerClient client;
+
+    private LinkedBlockingQueue<Runnable> dataQueue;
+    private ExecutorService transferService;
+
     protected volatile STATUS status = STATUS.UN_START;
 
     public Consumer(String name, ConsumerClient consumerClient) {
@@ -91,6 +92,7 @@ public class Consumer implements ShutdownHook {
         logger.info("consumer : {} --- {}   stop ~~~~", name, uuid);
         status = STATUS.STOP;
         transferService.shutdownNow();
+        this.dataQueue.clear();
         this.taskManager.stop();
         this.client.stop();
     }

@@ -22,7 +22,7 @@ public class PageResult {
     }
 
     public void addFieldResult(FieldResult fieldResult) {
-        if(this.fieldResults == null) {
+        if (this.fieldResults == null) {
             this.fieldResults = new ArrayList<>();
         }
         this.fieldResults.add(fieldResult);

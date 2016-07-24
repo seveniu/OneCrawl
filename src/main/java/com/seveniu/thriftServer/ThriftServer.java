@@ -2,6 +2,7 @@ package com.seveniu.thriftServer;
 
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.ConsumerManager;
+import com.seveniu.def.TaskStatus;
 import com.seveniu.task.SpiderRegulate;
 import com.seveniu.task.TaskStatistic;
 import org.apache.thrift.TException;
@@ -71,7 +72,7 @@ public class ThriftServer {
 
 
         @Override
-        public boolean addTask(String uuid, TaskInfo taskInfo) throws TException {
+        public TaskStatus addTask(String uuid, TaskInfo taskInfo) throws TException {
             return consumerManager.getConsumerByUUID(uuid).getTaskManager().addTask(taskInfo);
         }
 

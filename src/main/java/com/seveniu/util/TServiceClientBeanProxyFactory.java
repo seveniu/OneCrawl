@@ -76,7 +76,7 @@ public class TServiceClientBeanProxyFactory {
         clientProxy = Proxy.newProxyInstance(classLoader, new Class[]{ifaceClass}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if(isStop) {
+                if (isStop) {
                     throw new IllegalAccessException("client close");
                 }
                 TServiceClient client = pool.borrowObject();

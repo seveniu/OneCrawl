@@ -23,7 +23,7 @@ public enum FieldType {
     public static FieldType getType(int value) {
         FieldType[] fieldTypes = FieldType.values();
         for (FieldType fieldType : fieldTypes) {
-            if(fieldType.getId() == value) {
+            if (fieldType.getId() == value) {
                 return fieldType;
             }
         }
