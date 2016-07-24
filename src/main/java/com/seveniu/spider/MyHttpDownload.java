@@ -31,6 +31,7 @@ import us.codecraft.webmagic.utils.UrlUtils;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -108,6 +109,13 @@ public class MyHttpDownload extends HttpClientDownloader {
                 errorListener.onStatusCodeError(request, statusCode);
                 return null;
             }
+        } catch (SocketTimeoutException e) {
+            if (site.getCycleRetryTimes() > 0) {
+                return addToCycleRetry(request, site);
+            }
+            onError(request);
+            errorListener.onTimeOutError(request);
+            return null;
         } catch (ConnectTimeoutException e) {
 //            logger.warn("download page " + request.getUrl() + " error", e);
             if (site.getCycleRetryTimes() > 0) {
