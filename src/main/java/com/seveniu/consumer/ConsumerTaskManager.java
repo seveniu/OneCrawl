@@ -28,7 +28,7 @@ public class ConsumerTaskManager {
 
     private ThreadPoolExecutor spiderExecServer;
     private PriorityBlockingQueue<Runnable> waitTaskQueue;
-    private LinkedBlockingQueue<MySpider> runningQueue;
+    private ConcurrentHashMap<String, MySpider> runningSpider;
     private ConcurrentHashMap<String, MySpider> allSpider = new ConcurrentHashMap<>();
     private volatile boolean stop = false;
 
@@ -39,8 +39,8 @@ public class ConsumerTaskManager {
     }
 
     public void start() {
-        waitTaskQueue = new PriorityBlockingQueue<>();
-        runningQueue = new LinkedBlockingQueue<>();
+        waitTaskQueue = new PriorityBlockingQueue<>(MAX_WAIT);
+        runningSpider = new ConcurrentHashMap<>(MAX_RUNNING);
 
         spiderExecServer = new SpiderThreadPoolExecutor(MAX_RUNNING, MAX_RUNNING,
                 1L, TimeUnit.MINUTES,
@@ -59,6 +59,7 @@ public class ConsumerTaskManager {
     private final Object LOCK = new Object();
 
     /**
+     * 添加任务
      * 返回 任务状态
      */
     public TaskStatus addTask(TaskInfo taskInfo) {
@@ -80,12 +81,9 @@ public class ConsumerTaskManager {
         } else {
             synchronized (LOCK) {
                 // 如果已存在就返回
-                for (MySpider mySpider : runningQueue) {
-                    System.out.println(mySpider);
-                    if (mySpider.taskInfo().getId().equals(taskInfo.getId())) {
-                        logger.warn("consumer : {} task : {} is running", consumer.getName(), taskInfo.getId());
-                        return TaskStatus.RUNNING;
-                    }
+                if (runningSpider.containsKey(taskInfo.getId())) {
+                    logger.warn("consumer : {} task : {} is running", consumer.getName(), taskInfo.getId());
+                    return TaskStatus.RUNNING;
                 }
 
                 String spiderId = generateTaskId(consumer, taskInfo);
@@ -94,6 +92,8 @@ public class ConsumerTaskManager {
                 if (spiderTask != null) {
                     return TaskStatus.WAIT;
                 }
+
+                // 构建 并执行
 
                 try {
                     TemplateType templateType = TemplateType.get(taskInfo.getTemplateType().getValue());
@@ -133,7 +133,7 @@ public class ConsumerTaskManager {
                 spiderExecServer.shutdownNow();
                 waitTaskQueue.clear();
                 allSpider.clear();
-                runningQueue.clear();
+                runningSpider.clear();
             }
         }
     }
@@ -151,9 +151,9 @@ public class ConsumerTaskManager {
             SpiderRegulate.SpiderInfo spiderInfo = new SpiderRegulate.SpiderInfo();
             spiderInfo.setConsumerName(consumer.getName());
             spiderInfo.setWaitSpiderNum(waitTaskQueue.size());
-            spiderInfo.setRunningSpiderNum(runningQueue.size());
+            spiderInfo.setRunningSpiderNum(runningSpider.size());
             int threadNum = 0;
-            for (SpiderTask spiderTask : runningQueue) {
+            for (SpiderTask spiderTask : runningSpider.values()) {
                 threadNum += spiderTask.taskInfo().getThreadNum();
             }
             spiderInfo.setRunThreadNum(threadNum);
@@ -164,7 +164,7 @@ public class ConsumerTaskManager {
     public List<TaskStatistic> getRunningTaskInfo() {
         synchronized (LOCK) {
             List<TaskStatistic> taskStatisticList = new ArrayList<>();
-            for (MySpider mySpider : runningQueue) {
+            for (MySpider mySpider : runningSpider.values()) {
                 try {
                     taskStatisticList.add(mySpider.getTaskStatistic());
                 } catch (Exception e) {
@@ -190,11 +190,11 @@ public class ConsumerTaskManager {
                 e.printStackTrace();
             }
 
+            MySpider spider = (MySpider) r;
             synchronized (LOCK) {
-                runningQueue.add((MySpider) r);
+                runningSpider.put(spider.getTaskInfo().getId(), spider);
             }
-            SpiderTask spiderTask = (SpiderTask) r;
-            consumer.getClient().taskStatusChange(spiderTask.taskInfo().getId(), TaskStatus.RUNNING);
+            consumer.getClient().taskStatusChange(spider.taskInfo().getId(), TaskStatus.RUNNING);
         }
 
         @Override
@@ -206,7 +206,7 @@ public class ConsumerTaskManager {
             synchronized (LOCK) {
                 logger.info("spider : {} has done", spiderTask.getId());
                 allSpider.remove(spiderTask.getId());
-                runningQueue.remove(r);
+                runningSpider.remove(r);
             }
         }
     }
@@ -224,6 +224,6 @@ public class ConsumerTaskManager {
     }
 
     public int getCurRunningSize() {
-        return runningQueue.size();
+        return runningSpider.size();
     }
 }
