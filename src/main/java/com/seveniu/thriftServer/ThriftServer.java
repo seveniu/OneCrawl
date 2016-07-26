@@ -2,6 +2,7 @@ package com.seveniu.thriftServer;
 
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.ConsumerManager;
+import com.seveniu.consumer.ConsumerTaskManager;
 import com.seveniu.def.TaskStatus;
 import com.seveniu.task.SpiderRegulate;
 import com.seveniu.task.TaskStatistic;
@@ -81,6 +82,17 @@ public class ThriftServer {
             List<TaskStatistic> taskStatistics = consumerManager.getConsumerByUUID(uuid).getTaskManager().getRunningTaskInfo();
             return Json.toJson(taskStatistics);
         }
+
+        @Override
+        public ResourceInfo getResourceInfo(String uuid) throws TException {
+            ConsumerTaskManager taskManager = consumerManager.getConsumerByUUID(uuid).getTaskManager();
+            return new ResourceInfo(
+                    taskManager.getMaxRunning(),
+                    taskManager.getMaxWait(),
+                    taskManager.getCurRunningSize(),
+                    taskManager.getCurWaitSize());
+        }
+
 
         @Override
         public String getTaskSummary(String uuid) throws TException {

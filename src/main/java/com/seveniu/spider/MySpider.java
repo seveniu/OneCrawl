@@ -21,10 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by seveniu on 5/12/16.
  * MySpider
  */
-public class MySpider extends Spider implements SpiderTask {
+public class MySpider extends Spider implements SpiderTask, Comparable<MySpider> {
 
     private Logger logger = LoggerFactory.getLogger(MySpider.class);
-    private TaskInfo spiderConfig;
+    private TaskInfo taskInfo;
     private Date createTime = new Date();
     private Date startTime;
     private Date end;
@@ -36,24 +36,21 @@ public class MySpider extends Spider implements SpiderTask {
     MySpider(String id, TaskInfo config, MyPipeLine myPipeLine, MyPageProcessor pageProcessor, TaskStatistic taskStatistic) {
         super(pageProcessor);
         this.createTime = new Date();
-
         this.uuid = id;
-
-        this.setDownloader(new MyHttpDownload(taskStatistic));
         this.pipelines.add(myPipeLine);
-
         this.taskStatistic = taskStatistic;
         this.templateId = config.getTemplateId();
-        setConfig(config);
-        pageProcessor.setMySpider(this);
+        pageProcessor.setMySpider(config, this.taskStatistic);
+
+        this.taskInfo = config;
     }
 
 
-    private void setConfig(TaskInfo config) {
-        this.spiderConfig = config;
-        this.threadNum = config.getThreadNum();
+    private void init() {
+        this.setDownloader(new MyHttpDownload(taskStatistic));
+        this.threadNum = this.taskInfo.getThreadNum();
         this.setExecutorService(getExecutor(threadNum));
-        config.getUrls().forEach(this::addUrl);
+        this.taskInfo.getUrls().forEach(this::addUrl);
     }
 
     private ExecutorService getExecutor(int nThreads) {
@@ -76,8 +73,11 @@ public class MySpider extends Spider implements SpiderTask {
      */
     @Override
     public void run() {
-        this.taskStatistic.setStartTime(new Date());
+
         logger.info("spider start : {}  ", getId());
+        this.taskStatistic.setStartTime(new Date());
+        this.startTime = this.taskStatistic.getStartTime();
+        init();
         super.run();
         logger.info("spider end : {}  ", getId());
     }
@@ -109,7 +109,7 @@ public class MySpider extends Spider implements SpiderTask {
 
     @Override
     public TaskInfo taskInfo() {
-        return this.spiderConfig;
+        return this.taskInfo;
     }
 
 
@@ -127,8 +127,8 @@ public class MySpider extends Spider implements SpiderTask {
         return uuid;
     }
 
-    public TaskInfo getSpiderConfig() {
-        return spiderConfig;
+    public TaskInfo getTaskInfo() {
+        return taskInfo;
     }
 
     public TaskStatistic getTaskStatistic() {
@@ -138,7 +138,7 @@ public class MySpider extends Spider implements SpiderTask {
     @Override
     public String toString() {
         return "MySpider{" +
-                "taskInfo=" + spiderConfig +
+                "taskInfo=" + taskInfo +
                 ", id='" + uuid + '\'' +
                 ", createTime=" + createTime +
                 ", startTime=" + startTime +
@@ -147,4 +147,11 @@ public class MySpider extends Spider implements SpiderTask {
                 ", spiderType=" + templateType +
                 '}';
     }
+
+
+    @Override
+    public int compareTo(MySpider spider) {
+        return spider.taskInfo.getPriority() - this.taskInfo.getPriority();
+    }
+
 }

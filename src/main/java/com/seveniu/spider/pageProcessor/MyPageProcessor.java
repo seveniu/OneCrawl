@@ -3,12 +3,12 @@ package com.seveniu.spider.pageProcessor;
 import com.seveniu.common.json.Json;
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
-import com.seveniu.spider.MySpider;
 import com.seveniu.spider.parse.ParseHtml;
 import com.seveniu.spider.parse.ParseResult;
 import com.seveniu.task.TaskStatistic;
 import com.seveniu.template.PagesTemplate;
 import com.seveniu.template.def.Template;
+import com.seveniu.thriftServer.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
@@ -24,7 +24,6 @@ public abstract class MyPageProcessor implements PageProcessor {
     static final String SERIAL_NUM = "serialNum";
     static final String TEMPLATE = "serialNum";
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    protected MySpider mySpider;
     protected Consumer consumer;
 
     PagesTemplate pagesTemplate;
@@ -36,10 +35,9 @@ public abstract class MyPageProcessor implements PageProcessor {
         this.consumer = consumer;
     }
 
-    public void setMySpider(MySpider mySpider) {
-        this.mySpider = mySpider;
-        this.statistic = mySpider.getTaskStatistic();
-        this.taskId = mySpider.getSpiderConfig().getId();
+    public void setMySpider(TaskInfo taskInfo, TaskStatistic statistic) {
+        this.statistic = statistic;
+        this.taskId = taskInfo.getId();
     }
 
 //    MyPageProcessor(Consumer consumer, PagesTemplate pagesTemplate, TaskStatistic statistic) {

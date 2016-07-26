@@ -14,7 +14,8 @@ public enum TaskStatus implements TEnum {
     WAIT(1),
     RUNNING(2),
     STOP(3),
-    FAIL(4);
+    FAIL(4),
+    FULL(5);
 
     private final int value;
 
@@ -36,6 +37,8 @@ public enum TaskStatus implements TEnum {
                 return STOP;
             case 4:
                 return FAIL;
+            case 5:
+                return FULL;
             default:
                 return null;
         }
