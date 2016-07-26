@@ -7,7 +7,9 @@ package com.seveniu.spider.parse;
 public enum ParseErrorType {
 
     NOT_FOUND_XPATH("can't find xpath"),
-    NO_FIELD_MATCH("no field match");
+    NO_FIELD_MATCH("no field match"),
+    TEMPLATE_ERROR("template error"),
+    NO_FIELD_TYPE("no field type match");
 
     private String describe;
 

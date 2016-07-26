@@ -989,14 +989,6 @@ public class TaskInfo implements org.apache.thrift.TBase<TaskInfo, TaskInfo._Fie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("urls:");
-    if (this.urls == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.urls);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("proxy:");
     if (this.proxy == null) {
       sb.append("null");

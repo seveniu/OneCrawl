@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ConsumerTaskManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final int MAX_RUNNING = 1;
+    private static final int MAX_RUNNING = 20;
     private static final int MAX_WAIT = MAX_RUNNING * 2;
 
     private ThreadPoolExecutor spiderExecServer;
@@ -165,7 +165,11 @@ public class ConsumerTaskManager {
         synchronized (LOCK) {
             List<TaskStatistic> taskStatisticList = new ArrayList<>();
             for (MySpider mySpider : runningQueue) {
-                taskStatisticList.add(mySpider.getTaskStatistic());
+                try {
+                    taskStatisticList.add(mySpider.getTaskStatistic());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             return taskStatisticList;
         }

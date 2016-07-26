@@ -45,28 +45,25 @@ public class ParseHtml {
     /////////////////////////////    parse page    ////////////////////////////
 
     private ParseResult parsePage() {
+        if (template == null) {
+            logger.error("url : {} ,template is null", url);
+            parseResult.setParseError(new ParseError(null, ParseErrorType.TEMPLATE_ERROR));
+            return parseResult;
+        }
+        if (template.getFields() == null) {
+            logger.error("url : {} ,template field is null", url);
+            parseResult.setParseError(new ParseError(null, ParseErrorType.TEMPLATE_ERROR));
+            return parseResult;
+        }
 
         for (Field field : template.getFields()) {
-
-//            String xpath = field.getXpath();
-//            if (xpath != null) {
-//
-//                // 去除 html tag
-//
-//                String idReg = "(\\/html[\\s\\S]*?\\/)";
-//                Pattern pattern = Pattern.compile(idReg);
-//                Matcher matcher = pattern.matcher(xpath);
-//
-//                if (matcher.find()) {
-//                    xpath = "//" + xpath.substring(matcher.group().length());
-//                }
-//            }
             if (parseResult.getParseError() != null) {
                 break;
             }
             FieldType type = FieldType.getType(field.getType());
             if (type == null) {
                 logger.error("field html type is not found : {}", field.getType());
+                parseResult.setParseError(new ParseError(field, ParseErrorType.NO_FIELD_TYPE));
                 return parseResult;
             }
             switch (type) {

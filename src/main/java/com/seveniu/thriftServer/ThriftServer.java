@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,7 +80,13 @@ public class ThriftServer {
 
         @Override
         public String getRunningTasks(String uuid) throws TException {
-            List<TaskStatistic> taskStatistics = consumerManager.getConsumerByUUID(uuid).getTaskManager().getRunningTaskInfo();
+            List<TaskStatistic> taskStatistics;
+            try {
+                taskStatistics = consumerManager.getConsumerByUUID(uuid).getTaskManager().getRunningTaskInfo();
+            } catch (Exception e) {
+                logger.error("uuid : {} get Running Task error : {}", uuid, e.getMessage());
+                taskStatistics = new ArrayList<>(0);
+            }
             return Json.toJson(taskStatistics);
         }
 

@@ -71,10 +71,7 @@ public abstract class MyPageProcessor implements PageProcessor {
             statistic.addDoneUrlCount(1);
         }
 
-        // 页面有错误
-        if (parseResult.hasError()) {
-            return;
-        }
+
         process0(page, parseResult);
     }
 
