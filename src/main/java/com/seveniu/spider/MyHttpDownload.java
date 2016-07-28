@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.TruncatedChunkException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -49,10 +50,8 @@ public class MyHttpDownload extends HttpClientDownloader {
     private final Map<String, CloseableHttpClient> httpClients = new HashMap<>();
 
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
-    DownloaderErrorListener errorListener;
+    private DownloaderErrorListener errorListener;
 
-    public MyHttpDownload() {
-    }
 
     public MyHttpDownload(DownloaderErrorListener errorListener) {
         this.errorListener = errorListener;
@@ -126,6 +125,11 @@ public class MyHttpDownload extends HttpClientDownloader {
             return null;
         } catch (ConnectException e) {
             logger.warn("download page " + request.getUrl() + " connect error", e);
+            errorListener.onOtherConnectError(request);
+            return null;
+        } catch (TruncatedChunkException e) {
+            logger.warn("download page " + request.getUrl() + " connect error", e);
+            errorListener.onOtherConnectError(request);
             return null;
         } catch (IOException e) {
             logger.warn("download page " + request.getUrl() + " error", e);

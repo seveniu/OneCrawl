@@ -12,4 +12,7 @@ public interface DownloaderErrorListener {
 
     // 连接状态码错误
     void onStatusCodeError(Request request, int statusCode);
+
+    // 连接状态码错误
+    void onOtherConnectError(Request request);
 }

@@ -185,7 +185,7 @@ public class TaskStatistic implements DownloaderErrorListener {
         addNetErrorUrlCount(new String[]{request.getUrl()});
         Node contextNode = (Node) request.getExtra(CONTEXT_NODE);
         if (contextNode != null) {
-            addDoneNodeCount(1);
+            addErrorNodeCount(1);
         }
     }
 
@@ -194,8 +194,18 @@ public class TaskStatistic implements DownloaderErrorListener {
         addNetErrorUrlCount(new String[]{request.getUrl()});
         Node contextNode = (Node) request.getExtra(CONTEXT_NODE);
         if (contextNode != null) {
-            addDoneNodeCount(1);
+            addErrorNodeCount(1);
         }
+    }
+
+    @Override
+    public void onOtherConnectError(Request request) {
+        addNetErrorUrlCount(new String[]{request.getUrl()});
+        Node contextNode = (Node) request.getExtra(CONTEXT_NODE);
+        if (contextNode != null) {
+            addErrorNodeCount(1);
+        }
+
     }
 
     @Override
