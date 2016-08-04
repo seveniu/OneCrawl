@@ -41,6 +41,6 @@ appender("NOIP-FILE", FileAppender) {
 //root(INFO, ["STDOUT"])
 root(ERROR, ["STDOUT","FILE"])
 
-logger("com.seveniu",DEBUG,["STDOUT","FILE"],false)
+logger("com.seveniu",INFO,["STDOUT","FILE"],false)
 logger("org.spring",INFO,["STDOUT"],false)
 logger("us.codecraft.webmagic",INFO,["STDOUT"],false)

@@ -147,7 +147,7 @@ public class MyHttpDownload extends HttpClientDownloader {
                     EntityUtils.consume(httpResponse.getEntity());
                 }
             } catch (IOException e) {
-                logger.warn("close response fail", e);
+                logger.warn(" url : {}  close response fail ", e);
             }
         }
     }
