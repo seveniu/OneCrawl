@@ -1,6 +1,6 @@
 package com.seveniu.web;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 
 import java.util.List;
 import java.util.Map;

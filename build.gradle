@@ -49,14 +49,7 @@ repositories {
         }
         url "http://101.200.170.176:8081/nexus/content/groups/public/"
     }
-//    mavenLocal()
-//    if(profile.toUpperCase() == "DEV" ) {
-//    } else if(profile.toUpperCase() == "USA" ) {
-//        mavenCentral()
-//    } else {
-//    }
-//    maven { url "http://106.120.106.228:18081/content/groups/public/" }
-//    maven { url "http://maven.oschina.net/content/groups/public/"}
+
 }
 
 sourceCompatibility = 1.8
@@ -67,15 +60,10 @@ dependencies {
     // Spring Boot 对这些运维相关的功能进行了整合，形成了一个功能完备和可定制的功能集，称之为 Actuator。
     compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
 
-    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") {
-        exclude module: "spring-boot-starter-tomcat"
-    }
-    compile("org.springframework.boot:spring-boot-starter-jetty:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}")
-    compile('org.apache.commons:commons-pool2:2.4.2')
+    compile("org.springframework.boot:spring-boot-starter-remote-shell:${springBootVersion}")
 
-
-    println "${profile} compile actuator"
     if (profile != "stable") {
         compile("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
         println "compile devtool"
@@ -84,10 +72,9 @@ dependencies {
     }
 
 
+    compile('org.apache.commons:commons-pool2:2.4.2')
     compile("org.codehaus.groovy:groovy-all:2.4.6")
-    compile("org.springframework.boot:spring-boot-starter-remote-shell:${springBootVersion}")
 
-//    compile('us.codecraft:webmagic-core:0.5.3')
     compile('us.codecraft:webmagic-core:0.5.3'){
         force = true
         exclude group: 'org.slf4j', module: 'slf4j-log4j12' //by both name and group
@@ -103,12 +90,8 @@ dependencies {
     compile('org.apache.thrift:libthrift:0.9.3')
     compile('commons-validator:commons-validator:1.4.0')
 
-
-    compile('com.seveniu:Commons:0.0.12')
-
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 
-    //optional "org.springframework.boot:spring-boot-configuration-processor"
 }
 
 compileJava.dependsOn(processResources)
@@ -139,18 +122,8 @@ task wrapper(type: Wrapper) {
 
 mainClassName="com.seveniu.AppCrawl"
 bootRun {
-    // 从 gradle.properties 中读取
-    String springProfile = System.getProperty("spring.profiles.active")
-    println("system prop spring.profiles.active : ${springProfile}")
-    //手动设置 jvm 属性
-//    System.setProperty("spring.profiles.active", (String)springProfile)
-    systemProperties.putAt("spring.profiles.active",springProfile)
+    systemProperties.putAt("spring.profiles.active",profile)
     addResources = true
-}
-
-
-task curProfile << {
-    println("hello ${profile}")
 }
 
 task helloworld << {

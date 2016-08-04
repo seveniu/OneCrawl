@@ -1,6 +1,6 @@
 package com.seveniu.web;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 import com.seveniu.task.SpiderRegulate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

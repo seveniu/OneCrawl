@@ -1,6 +1,6 @@
 package com.seveniu.spider.pageProcessor;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
 import com.seveniu.spider.parse.ParseHtml;

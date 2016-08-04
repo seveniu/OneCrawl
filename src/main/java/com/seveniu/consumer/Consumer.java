@@ -1,7 +1,5 @@
 package com.seveniu.consumer;
 
-import com.seveniu.common.tools.ShutdownHook;
-import com.seveniu.common.tools.ShutdownHookManager;
 import com.seveniu.node.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * Created by seveniu on 5/13/16.
  * Consumer
  */
-public class Consumer implements ShutdownHook {
+public class Consumer {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String uuid;
@@ -59,7 +57,6 @@ public class Consumer implements ShutdownHook {
                 new ThreadPoolExecutor.CallerRunsPolicy());
         taskManager = new ConsumerTaskManager(this);
         taskManager.start();
-        ShutdownHookManager.get().register(this);
         status = STATUS.START;
         logger.info("consumer : {} start", name);
     }
@@ -104,12 +101,6 @@ public class Consumer implements ShutdownHook {
                 ", type : " + this.getClass() +
                 "}";
     }
-
-    @Override
-    public void shutdown() {
-        stop();
-    }
-
 
     public enum STATUS {
         STOP, START, UN_START

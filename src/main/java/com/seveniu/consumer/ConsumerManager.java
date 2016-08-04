@@ -1,6 +1,6 @@
 package com.seveniu.consumer;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 import com.seveniu.consumer.remote.HttpRemoteConsumer;
 import com.seveniu.consumer.remote.thrift.ThriftRemoteConsumer;
 import com.seveniu.task.SpiderRegulate;
@@ -11,6 +11,7 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,10 +31,9 @@ import java.util.concurrent.TimeUnit;
  * ConsumerManager
  */
 @Component
-public class ConsumerManager {
+public class ConsumerManager implements DisposableBean {
 
-    @Autowired
-    SpiderRegulate spiderRegulate;
+    private final SpiderRegulate spiderRegulate;
     private static final String REMOTE_CONFIG_PATH = "consumer/";
     private Logger logger = LoggerFactory.getLogger(ConsumerManager.class);
     private static final int WAIT_THRESHOLD = 1000;
@@ -41,8 +41,12 @@ public class ConsumerManager {
     private ConcurrentHashMap<String, Consumer> consumerMap = new ConcurrentHashMap<>();
     private ScheduledExecutorService monitorSchedule;
 
-    public void start() {
+    @Autowired
+    public ConsumerManager(SpiderRegulate spiderRegulate) {
+        this.spiderRegulate = spiderRegulate;
+    }
 
+    public void start() {
         monitorSchedule = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "OutManager-monitor-thread"));
         monitor();
         regRemoteConsumerFromFile();
@@ -208,4 +212,8 @@ public class ConsumerManager {
         }, 0, 1, TimeUnit.MINUTES);
     }
 
+    @Override
+    public void destroy() throws Exception {
+        consumerMap.values().forEach(Consumer::stop);
+    }
 }

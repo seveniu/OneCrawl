@@ -1,6 +1,6 @@
 package com.seveniu.thriftServer;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 import com.seveniu.consumer.ConsumerManager;
 import com.seveniu.consumer.ConsumerTaskManager;
 import com.seveniu.def.TaskStatus;

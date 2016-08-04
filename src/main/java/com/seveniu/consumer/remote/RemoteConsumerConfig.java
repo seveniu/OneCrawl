@@ -1,6 +1,6 @@
 package com.seveniu.consumer.remote;
 
-import com.seveniu.common.json.Json;
+import com.seveniu.util.Json;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.commons.validator.routines.UrlValidator;
