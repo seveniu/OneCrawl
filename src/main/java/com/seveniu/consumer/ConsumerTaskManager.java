@@ -64,6 +64,8 @@ public class ConsumerTaskManager {
      */
     public TaskStatus addTask(TaskInfo taskInfo) {
 
+        // 优先级 小于 100 并且 等待队列满的时候, 返回 FULL
+        // 如果优先级 大于等于 100, 不管队列是否满, 都立即执行
         if (taskInfo.getPriority() < 100 && waitTaskQueue.size() >= MAX_WAIT) {
             logger.info("wait queue is full");
             return TaskStatus.FULL;
