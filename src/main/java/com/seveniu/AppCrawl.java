@@ -33,8 +33,6 @@ import org.springframework.core.env.Environment;
 import java.util.Arrays;
 
 @SpringBootApplication
-@Configuration
-@EnableAutoConfiguration
 @ComponentScan("com.seveniu")
 public class AppCrawl {
     private static final Logger logger = LoggerFactory.getLogger(AppCrawl.class);

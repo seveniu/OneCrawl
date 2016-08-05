@@ -14,7 +14,7 @@ server:
     port: 20001
     session:
         cookie:
-            name: CRAWLSESSION
+            name: CRAWL_SESSION
 
 #spring.view.prefix: templates
 
@@ -30,20 +30,9 @@ shell:
 #    command-path-patterns: classpath*:/cmd/** #defalut /commands/**,/crash/commands/**
 
 
-
-hello: hello
-
----
-spring:
-    profiles: home
 thriftServerPort: 20003
 
 ---
 spring:
     profiles: dev
-thriftServerPort: 20003
-
----
-spring:
-    profiles: stable
 thriftServerPort: 20003

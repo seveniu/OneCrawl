@@ -1,12 +1,38 @@
 # OneCrawl 爬虫服务器
 
-运行 : 
+### 运行
+
+    mac linux : ./gradlew bootRun -Pprofile=dev
+
+    windows : ./gradlew.bat bootRun -Pprofile=dev
+
+    jar : 
+    ./gradlew assemble
+    java -jar build/libs/one-crawl-0.1.0.jar --spring.profiles.active=dev
+
+
+### 接口
+``` thrift
+  string reg(1:ConsumerConfig consumerConfig)// 返回 uuid
+  TaskStatus addTask(1:string uuid,2:TaskInfo task)
+  string getRunningTasks(1:string uuid)
+  ResourceInfo getResourceInfo(1:string uuid)
+  string getTaskSummary(1:string uuid)
+```
+具体查看 conf/OneCrawl.thrift
 
 ### 相关项目
-SDK : [OneCrawlSdk](https://github.com/seveniu/OneCrawlSdk) 嵌入到客户端使用
+SDK : [OneCrawlSdk](https://github.com/seveniu/OneCrawlSdk) 
+    
+    嵌入到客户端使用
+    通过调用 OneCrawl 接口, 注册客户端,添加任务,获取任务状态,以及结果
 
-模板管理(DEMO) : [OneCrawlTemplate](https://github.com/seveniu/OneCrawlTemplate)
+模板管理(爬虫客户端DEMO) : [OneCrawlTemplate](https://github.com/seveniu/OneCrawlTemplate)
+    
+    管理爬虫模板
+    通过chrome 插件生成模板,并存储
 
 chrome 插件 : [OneCrawlTemplateExtension](https://github.com/seveniu/OneCrawlTemplateExtension)
+   
 
 

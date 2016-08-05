@@ -1,4 +1,3 @@
-
 println("******************")
 
 // project的额外属性，这里用于定义profile属性，模拟maven的profile
@@ -8,22 +7,8 @@ ext {
 }
 buildscript {
     repositories {
-        maven {
-            credentials {
-                username "guest"
-                password "qwerzxcvasdf"
-            }
-            url "http://101.200.170.176:8081/nexus/content/groups/public/"
-        }
-//        mavenLocal()
-//        if(profile.toUpperCase() == "DEV" ) {
-//            maven { url "http://192.168.0.165:8081/nexus/content/groups/public/" }
-//        } else if(profile.toUpperCase() == "USA" ) {
-//            mavenCentral()
-//        } else {
-//        }
-//        maven { url 'https://repo.spring.io/plugins-release' }
-//        maven { url "http://maven.oschina.net/content/groups/public/"}
+        mavenLocal()
+        mavenCentral()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -37,19 +22,13 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
 jar {
-    baseName = 'crawl'
+    baseName = 'one-crawl'
     version = '0.1.0'
 }
 
 repositories {
-    maven {
-        credentials {
-            username "guest"
-            password "qwerzxcvasdf"
-        }
-        url "http://101.200.170.176:8081/nexus/content/groups/public/"
-    }
-
+    mavenLocal()
+    mavenCentral()
 }
 
 sourceCompatibility = 1.8
@@ -100,7 +79,6 @@ sourceSets {
     main {
         resources {
             srcDir "conf"
-            srcDir "conf-${profile}"
             srcDir 'cmd'
             srcDir 'script'
         }
