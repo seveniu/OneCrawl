@@ -1,5 +1,12 @@
 # OneCrawl 爬虫服务器
 
+基于 [webmagic](https://github.com/code4craft/webmagic)
+
+Feature
+
+* 中心话爬虫服务器, 可连接多个客户端
+* 支持定向爬虫
+
 ### 运行
 
     mac linux : ./gradlew bootRun -Pprofile=dev
@@ -33,6 +40,14 @@ SDK : [OneCrawlSdk](https://github.com/seveniu/OneCrawlSdk)
     通过chrome 插件生成模板,并存储
 
 chrome 插件 : [OneCrawlTemplateExtension](https://github.com/seveniu/OneCrawlTemplateExtension)
-   
+    
+    配合 模板管理使用
 
 
+FileDownload : [FileDownload](https://github.com/seveniu/FileDownload)
+    
+    文件下载工具
+
+FileUpload : [FileUpload](https://github.com/seveniu/FileUpload)
+    
+    文件上传工具
