@@ -208,7 +208,7 @@ public class ConsumerTaskManager {
             synchronized (LOCK) {
                 logger.info("spider : {} has done", spiderTask.getId());
                 allSpider.remove(spiderTask.getId());
-                runningSpider.remove(r);
+                runningSpider.remove(spiderTask.getTaskInfo().getId());
             }
         }
     }

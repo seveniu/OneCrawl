@@ -33,6 +33,7 @@ import us.codecraft.webmagic.utils.UrlUtils;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -108,6 +109,10 @@ public class MyHttpDownload extends HttpClientDownloader {
                 errorListener.onStatusCodeError(request, statusCode);
                 return null;
             }
+        } catch (UnknownHostException e) {
+            logger.warn("download page " + request.getUrl() + " connect error, unknown host", e);
+            errorListener.onOtherConnectError(request);
+            return null;
         } catch (SocketTimeoutException e) {
             if (site.getCycleRetryTimes() > 0) {
                 return addToCycleRetry(request, site);
