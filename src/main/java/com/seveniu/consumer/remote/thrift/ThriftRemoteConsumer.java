@@ -35,7 +35,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
         TTransport transport = new TSocket(host, port);
         transport.open();
 
-        logger.info("template client connect /{}:{}", host, port);
+        logger.info("client connect /{}:{}", host, port);
 
         try {
             clientBeanProxyFactory = new TServiceClientBeanProxyFactory();

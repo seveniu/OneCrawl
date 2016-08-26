@@ -33,12 +33,12 @@
     2:required string msg;
  }
  enum Proxy{
-    OFF = 1,
-    ON = 2
+    ON = 1,
+    OFF = 2
  }
  enum Javascript{
-    OFF = 1,
-    ON = 2
+    ON = 1,
+    OFF = 2
  }
 
  enum TaskStatus {
