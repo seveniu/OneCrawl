@@ -1,6 +1,5 @@
 package com.seveniu.spider.pageProcessor;
 
-import com.seveniu.util.Json;
 import com.seveniu.consumer.Consumer;
 import com.seveniu.node.Node;
 import com.seveniu.spider.parse.ParseHtml;
@@ -9,6 +8,7 @@ import com.seveniu.task.TaskStatistic;
 import com.seveniu.template.PagesTemplate;
 import com.seveniu.template.def.Template;
 import com.seveniu.thriftServer.TaskInfo;
+import com.seveniu.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
@@ -85,7 +85,10 @@ public abstract class MyPageProcessor implements PageProcessor {
     public Site getSite() {
         return Site.me()
                 .setUserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.71 Safari/537.36")
-                .setRetryTimes(3);
+                .setRetryTimes(3)
+                .setTimeOut(10 * 1000)
+                ;
+
     }
 
 }
