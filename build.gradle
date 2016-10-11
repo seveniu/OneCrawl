@@ -68,6 +68,7 @@ dependencies {
     compile('com.google.guava:guava:18.0')
     compile('org.apache.thrift:libthrift:0.9.3')
     compile('commons-validator:commons-validator:1.4.0')
+    compile('redis.clients:jedis:2.8.0')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 

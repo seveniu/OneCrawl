@@ -1,11 +1,12 @@
 package com.seveniu.consumer.remote.thrift;
 
-import com.seveniu.util.Json;
+import com.seveniu.DataQueue;
 import com.seveniu.consumer.ConsumerClient;
 import com.seveniu.def.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
 import com.seveniu.thriftServer.ConsumerConfig;
+import com.seveniu.util.Json;
 import com.seveniu.util.TServiceClientBeanProxyFactory;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TSocket;
@@ -23,10 +24,12 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     private ConsumerConfig remoteConsumerConfig;
 
     private ConsumerThrift.Iface client;
+    private DataQueue dataQueue;
 
-    public ThriftRemoteConsumer(ConsumerConfig config) throws TTransportException {
+    public ThriftRemoteConsumer(ConsumerConfig config, DataQueue dataQueue) throws TTransportException {
         this.remoteConsumerConfig = config;
         this.build(config.getHost(), config.getPort());
+        this.dataQueue = dataQueue;
     }
 
     private TServiceClientBeanProxyFactory clientBeanProxyFactory;
@@ -59,12 +62,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     @Override
     public void done(Node node) {
         String data = Json.toJson(node);
-        try {
-            client.done(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.warn("consumer done warn : {}", e.getMessage());
-        }
+        dataQueue.addData(remoteConsumerConfig.getName(), data);
     }
 
     @Override

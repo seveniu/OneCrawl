@@ -1,10 +1,11 @@
 package com.seveniu.consumer;
 
-import com.seveniu.util.Json;
+import com.seveniu.DataQueue;
 import com.seveniu.consumer.remote.HttpRemoteConsumer;
 import com.seveniu.consumer.remote.thrift.ThriftRemoteConsumer;
 import com.seveniu.task.SpiderRegulate;
 import com.seveniu.thriftServer.ConsumerConfig;
+import com.seveniu.util.Json;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -40,10 +41,12 @@ public class ConsumerManager implements DisposableBean {
     // uuid , consumer
     private ConcurrentHashMap<String, Consumer> consumerMap = new ConcurrentHashMap<>();
     private ScheduledExecutorService monitorSchedule;
+    private final DataQueue dataQueue;
 
     @Autowired
-    public ConsumerManager(SpiderRegulate spiderRegulate) {
+    public ConsumerManager(SpiderRegulate spiderRegulate, DataQueue dataQueue) {
         this.spiderRegulate = spiderRegulate;
+        this.dataQueue = dataQueue;
     }
 
     public void start() {
@@ -79,7 +82,7 @@ public class ConsumerManager implements DisposableBean {
                     consumerClient = new HttpRemoteConsumer(remoteConsumerConfig);
                     break;
                 case "thrift":
-                    consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig);
+                    consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig, dataQueue);
                     break;
                 default:
                     logger.error("consumer is null ");

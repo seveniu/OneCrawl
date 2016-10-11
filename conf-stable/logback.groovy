@@ -30,13 +30,6 @@ appender("FILE", FileAppender) {
     }
 }
 
-appender("NOIP-FILE", FileAppender) {
-    file = "log/no-ip.log"
-    append = true
-    encoder(PatternLayoutEncoder) {
-        pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    }
-}
 
 //root(INFO, ["STDOUT"])
 root(ERROR, ["STDOUT","FILE"])
