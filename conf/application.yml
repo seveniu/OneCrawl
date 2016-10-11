@@ -19,14 +19,16 @@ server:
 #spring.view.prefix: templates
 
 #shell.command-path-patterns= # classpath*:/commands/**, classpath*:/crash/commands/**
-shell:
+management:
+  shell:
     auth:
-        simple:
-            user:
-                name: donopo
-                password: 123
+      simple:
+        user:
+          name: dhlz
+          password: 123
     ssh:
-        port: 20002
+      port: 20002
+      enabled: true
 #    command-path-patterns: classpath*:/cmd/** #defalut /commands/**,/crash/commands/**
 
 
