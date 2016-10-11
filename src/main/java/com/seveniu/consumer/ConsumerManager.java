@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -42,6 +43,9 @@ public class ConsumerManager implements DisposableBean {
     private ConcurrentHashMap<String, Consumer> consumerMap = new ConcurrentHashMap<>();
     private ScheduledExecutorService monitorSchedule;
     private final DataQueue dataQueue;
+
+    @Value("${dataQueue:false}")
+    boolean useDataQueue;
 
     @Autowired
     public ConsumerManager(SpiderRegulate spiderRegulate, DataQueue dataQueue) {
@@ -82,7 +86,11 @@ public class ConsumerManager implements DisposableBean {
                     consumerClient = new HttpRemoteConsumer(remoteConsumerConfig);
                     break;
                 case "thrift":
-                    consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig, dataQueue);
+                    if (useDataQueue) {
+                        consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig, dataQueue);
+                    } else {
+                        consumerClient = new ThriftRemoteConsumer(remoteConsumerConfig);
+                    }
                     break;
                 default:
                     logger.error("consumer is null ");

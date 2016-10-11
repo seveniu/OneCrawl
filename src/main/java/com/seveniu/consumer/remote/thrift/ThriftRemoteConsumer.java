@@ -26,6 +26,11 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     private ConsumerThrift.Iface client;
     private DataQueue dataQueue;
 
+    public ThriftRemoteConsumer(ConsumerConfig config) throws TTransportException {
+        this.remoteConsumerConfig = config;
+        this.build(config.getHost(), config.getPort());
+    }
+
     public ThriftRemoteConsumer(ConsumerConfig config, DataQueue dataQueue) throws TTransportException {
         this.remoteConsumerConfig = config;
         this.build(config.getHost(), config.getPort());
@@ -62,7 +67,16 @@ public class ThriftRemoteConsumer implements ConsumerClient {
     @Override
     public void done(Node node) {
         String data = Json.toJson(node);
-        dataQueue.addData(remoteConsumerConfig.getName(), data);
+        if (dataQueue != null) {
+            dataQueue.addData(remoteConsumerConfig.getName(), data);
+        } else {
+            try {
+                client.done(data);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn("consumer done warn : {}", e.getMessage());
+            }
+        }
     }
 
     @Override
