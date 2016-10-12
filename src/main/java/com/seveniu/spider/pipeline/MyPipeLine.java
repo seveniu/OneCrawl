@@ -33,6 +33,7 @@ public class MyPipeLine implements Pipeline {
             Node node = resultItems.get(MyPageProcessor.CONTEXT_NODE);
             if (node == null) {
                 logger.warn("pipeline get node is null");
+                return;
             }
 
             // out 输出
