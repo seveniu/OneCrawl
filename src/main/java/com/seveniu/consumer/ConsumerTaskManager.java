@@ -23,11 +23,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ConsumerTaskManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final int MAX_RUNNING = 20;
-    private static final int MAX_WAIT = MAX_RUNNING * 2;
+    private static final int CORE_RUNNING = 20;
+    private static final int MAX_RUNNING = 40;
+    private static final int MAX_WAIT = 1000;
+//    private static final int CORE_RUNNING = 1;
+//    private static final int MAX_RUNNING = 1;
+//    private static final int MAX_WAIT = 1;
 
     private ThreadPoolExecutor spiderExecServer;
-    private PriorityBlockingQueue<Runnable> waitTaskQueue;
+    private PriorityBlockingQueue<MySpider> waitTaskQueue;
     private ConcurrentHashMap<String, MySpider> runningSpider;
     private ConcurrentHashMap<String, MySpider> allSpider = new ConcurrentHashMap<>();
     private volatile boolean stop = false;
@@ -42,9 +46,8 @@ public class ConsumerTaskManager {
         waitTaskQueue = new PriorityBlockingQueue<>(MAX_WAIT);
         runningSpider = new ConcurrentHashMap<>(MAX_RUNNING);
 
-        spiderExecServer = new SpiderThreadPoolExecutor(MAX_RUNNING, MAX_RUNNING,
+        spiderExecServer = new SpiderThreadPoolExecutor(CORE_RUNNING, MAX_RUNNING,
                 1L, TimeUnit.MINUTES,
-                waitTaskQueue,
                 new ThreadFactory() {
                     AtomicInteger count = new AtomicInteger();
 
@@ -52,9 +55,32 @@ public class ConsumerTaskManager {
                     public Thread newThread(Runnable r) {
                         return new Thread(r, consumer.getName() + "-spider-exec-thread-" + count.getAndIncrement());
                     }
-                }, new ThreadPoolExecutor.CallerRunsPolicy());
+                });
+        exec();
     }
 
+    private void exec() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    MySpider mySpider;
+                    try {
+                        mySpider = waitTaskQueue.poll(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        mySpider = null;
+                        e.printStackTrace();
+                        logger.error("InterruptedException : ", e.getMessage());
+                    }
+                    if (mySpider != null) {
+                        spiderExecServer.execute(mySpider);
+                        logger.info("consumer exec task : {}", mySpider.getId());
+                    }
+                }
+            }
+        }, "loop-poll-task-to-exec");
+        thread.start();
+    }
 
     private final Object LOCK = new Object();
 
@@ -67,7 +93,7 @@ public class ConsumerTaskManager {
         // 优先级 小于 100 并且 等待队列满的时候, 返回 FULL
         // 如果优先级 大于等于 100, 不管队列是否满, 都立即执行
         if (taskInfo.getPriority() < 100 && waitTaskQueue.size() >= MAX_WAIT) {
-            logger.info("wait queue is full");
+            logger.warn("wait queue is full");
             return TaskStatus.FULL;
         }
         PagesTemplate pagesTemplate;
@@ -89,9 +115,8 @@ public class ConsumerTaskManager {
                 }
 
                 String spiderId = generateTaskId(consumer, taskInfo);
-                SpiderTask spiderTask = allSpider.get(spiderId);
 
-                if (spiderTask != null) {
+                if (allSpider.containsKey(spiderId)) {
                     return TaskStatus.WAIT;
                 }
 
@@ -101,29 +126,18 @@ public class ConsumerTaskManager {
                     TemplateType templateType = TemplateType.get(taskInfo.getTemplateType().getValue());
                     MySpider mySpider = SpiderFactory.getSpider(spiderId, templateType, taskInfo, consumer, pagesTemplate);
                     allSpider.put(spiderId, mySpider);
-                    execTask(mySpider);
+                    waitTaskQueue.add(mySpider);
+                    if(waitTaskQueue.size() >0) {
+                        return TaskStatus.WAIT;
+                    } else {
+                        return TaskStatus.RUNNING;
+                    }
 
-                    return TaskStatus.WAIT;
                 } catch (IllegalArgumentException e) {
                     logger.error("template type error : {}", e.getMessage());
                     return TaskStatus.FAIL;
                 }
             }
-        }
-    }
-
-
-    private final Object execTaskLock = new Object();
-
-    private void execTask(SpiderTask spiderTask) {
-        synchronized (execTaskLock) {
-
-            if (stop) {
-                return;
-            }
-
-            spiderExecServer.execute(spiderTask);
-            logger.info("consumer exec task : {}", spiderTask.getId());
         }
     }
 
@@ -179,8 +193,8 @@ public class ConsumerTaskManager {
 
 
     private class SpiderThreadPoolExecutor extends ThreadPoolExecutor {
-        SpiderThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
-            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+        SpiderThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, ThreadFactory threadFactory) {
+            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, new SynchronousQueue<>(), threadFactory, new CallerRunsPolicy());
         }
 
         @Override
