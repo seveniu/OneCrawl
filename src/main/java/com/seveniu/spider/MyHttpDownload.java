@@ -270,6 +270,9 @@ public class MyHttpDownload extends HttpClientDownloader {
                 }
             }
 
+            if (charset == null) {
+                charset = "GBK";
+            }
             if (charset.toUpperCase().equals("GB2312")) {
                 charset = "GBK";
             }

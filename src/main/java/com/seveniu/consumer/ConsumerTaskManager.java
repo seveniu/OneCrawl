@@ -35,6 +35,7 @@ public class ConsumerTaskManager {
     private ConcurrentHashMap<String, MySpider> runningSpider;
     private ConcurrentHashMap<String, MySpider> allSpider = new ConcurrentHashMap<>();
     private volatile boolean stop = false;
+    private int count = 0;
 
     private Consumer consumer;
 
@@ -64,17 +65,16 @@ public class ConsumerTaskManager {
             @Override
             public void run() {
                 while (true) {
-                    MySpider mySpider;
+
                     try {
-                        mySpider = waitTaskQueue.poll(10, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        mySpider = null;
+                        MySpider mySpider = waitTaskQueue.poll(10, TimeUnit.SECONDS);
+
+                        if (mySpider != null) {
+                            spiderExecServer.execute(mySpider);
+                            logger.info("count: {} ,consumer exec task : {}", count++, mySpider.getId());
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("InterruptedException : ", e.getMessage());
-                    }
-                    if (mySpider != null) {
-                        spiderExecServer.execute(mySpider);
-                        logger.info("consumer exec task : {}", mySpider.getId());
                     }
                 }
             }
@@ -127,7 +127,7 @@ public class ConsumerTaskManager {
                     MySpider mySpider = SpiderFactory.getSpider(spiderId, templateType, taskInfo, consumer, pagesTemplate);
                     allSpider.put(spiderId, mySpider);
                     waitTaskQueue.add(mySpider);
-                    if(waitTaskQueue.size() >0) {
+                    if (waitTaskQueue.size() > 0) {
                         return TaskStatus.WAIT;
                     } else {
                         return TaskStatus.RUNNING;
@@ -194,7 +194,19 @@ public class ConsumerTaskManager {
 
     private class SpiderThreadPoolExecutor extends ThreadPoolExecutor {
         SpiderThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, ThreadFactory threadFactory) {
-            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, new SynchronousQueue<>(), threadFactory, new CallerRunsPolicy());
+            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, new SynchronousQueue<>(), threadFactory,
+                    new RejectedExecutionHandler() {
+                        @Override
+                        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                            if (!executor.isShutdown()) {
+                                try {
+                                    executor.getQueue().put(r);
+                                } catch (InterruptedException e) {
+                                    // should not be interrupted
+                                }
+                            }
+                        }
+                    });
         }
 
         @Override
