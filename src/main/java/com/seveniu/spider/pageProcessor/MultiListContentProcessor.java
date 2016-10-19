@@ -43,18 +43,13 @@ public class MultiListContentProcessor extends MyPageProcessor {
         Integer curSerialNum = (Integer) page.getRequest().getExtra(SERIAL_NUM);
         int pagesNum = pagesTemplate.pagesNum();
         if (curSerialNum < pagesNum - 1) { // 跳转页面
-            boolean createNode = false;
-            if (curSerialNum + 2 == pagesNum) {// 倒数第二页
-                createNode = true;
-            }
-            targetPage(page, parseResult, curSerialNum, createNode);
+            targetPage(page, parseResult, curSerialNum);
         } else if (curSerialNum == pagesNum - 1) {
             contentPage(page, parseResult, curSerialNum);
         }
     }
 
-    private void targetPage(Page page, ParseResult parseResult, Integer curSerialNum, boolean createNode) {
-//        String url = page.getUrl().get();
+    private void targetPage(Page page, ParseResult parseResult, Integer curSerialNum) {
         // 处理解析的结果
         // 下一页链接
         if (parseResult.hasNextPageLinks()) {
@@ -63,6 +58,7 @@ public class MultiListContentProcessor extends MyPageProcessor {
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
+            statistic.addNextUrlCount(1);
         }
 
         // 跳转链接
@@ -73,10 +69,6 @@ public class MultiListContentProcessor extends MyPageProcessor {
                     statistic.addRepeatUrlCount(1);
                 } else {
                     Request request = new Request(targetLink.getUrl()).putExtra(SERIAL_NUM, curSerialNum + 1);
-                    if (createNode) {
-                        Node node = new Node(targetLink.getUrl(), taskId);
-                        request.putExtra(CONTEXT_NODE, node);
-                    }
                     page.addTargetRequest(request);
                 }
             }
@@ -90,15 +82,14 @@ public class MultiListContentProcessor extends MyPageProcessor {
         String url = page.getUrl().get();
         // 处理解析的结果
         Node contextNode = (Node) page.getRequest().getExtra(CONTEXT_NODE);
+        if (contextNode == null) {
+            contextNode = new Node(url, taskId);
+        }
         // 内容
         if (parseResult.getFieldResults() != null && parseResult.getFieldResults().size() > 0) {
             // 有文本字段,就获取 node 添加内容
-            if (contextNode == null) {
-                logger.error("context Node is null");
-            } else {
-                statistic.addCreateNodeCount(1);
-                contextNode.addPageResult(new PageResult().setUrl(url).setFieldResults(parseResult.getFieldResults()));
-            }
+            statistic.addCreateNodeCount(1);
+            contextNode.addPageResult(new PageResult().setUrl(url).setFieldResults(parseResult.getFieldResults()));
         } else {
             logger.error("content page field is null, url : {}", url);
         }
@@ -110,10 +101,10 @@ public class MultiListContentProcessor extends MyPageProcessor {
             }
             // 统计
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
+            statistic.addNextUrlCount(1);
         } else {
             statistic.addDoneNodeCount(1);
             page.putField(CONTEXT_NODE, contextNode);
-//            page.putField(TASK, task);
         }
     }
 

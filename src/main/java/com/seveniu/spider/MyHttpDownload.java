@@ -109,40 +109,13 @@ public class MyHttpDownload extends HttpClientDownloader {
                 errorListener.onStatusCodeError(request, statusCode);
                 return null;
             }
-        } catch (UnknownHostException e) {
-            logger.warn("download page " + request.getUrl() + " connect error, unknown host", e);
-            errorListener.onOtherConnectError(request);
-            return null;
-        } catch (SocketTimeoutException e) {
-            if (site.getCycleRetryTimes() > 0) {
-                return addToCycleRetry(request, site);
-            }
-            onError(request);
-            errorListener.onTimeOutError(request);
-            return null;
-        } catch (ConnectTimeoutException e) {
-//            logger.warn("download page " + request.getUrl() + " error", e);
-            if (site.getCycleRetryTimes() > 0) {
-                return addToCycleRetry(request, site);
-            }
-            onError(request);
-            errorListener.onTimeOutError(request);
-            return null;
-        } catch (ConnectException e) {
-            logger.warn("download page " + request.getUrl() + " connect error", e);
-            errorListener.onOtherConnectError(request);
-            return null;
-        } catch (TruncatedChunkException e) {
-            logger.warn("download page " + request.getUrl() + " connect error", e);
-            errorListener.onOtherConnectError(request);
-            return null;
         } catch (IOException e) {
             logger.warn("download page " + request.getUrl() + " error", e);
             if (site.getCycleRetryTimes() > 0) {
                 return addToCycleRetry(request, site);
             }
             onError(request);
-            errorListener.onTimeOutError(request);
+            errorListener.onOtherConnectError(request);
             return null;
         } finally {
             request.putExtra(Request.STATUS_CODE, statusCode);

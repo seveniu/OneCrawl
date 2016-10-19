@@ -58,9 +58,8 @@ public class ThriftRemoteConsumer implements ConsumerClient {
         try {
             return client.has(url);
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.warn("url check warn : {}", e.getMessage());
-            return false;
+            logger.warn("consumer : {} url check warn : {}", remoteConsumerConfig.getName(), e.getMessage());
+            return true;
         }
     }
 
@@ -73,8 +72,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
             try {
                 client.done(data);
             } catch (Exception e) {
-                e.printStackTrace();
-                logger.warn("consumer done warn : {}", e.getMessage());
+                logger.warn("consumer {} done warn : {}", remoteConsumerConfig.getName(), e.getMessage());
             }
         }
     }
@@ -84,8 +82,7 @@ public class ThriftRemoteConsumer implements ConsumerClient {
         try {
             client.statistic(Json.toJson(statistic));
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.warn("get task statistic warn : {}", e.getMessage());
+            logger.warn("consumer {} get task statistic warn : {}", remoteConsumerConfig.getName(), e.getMessage());
         }
     }
 
