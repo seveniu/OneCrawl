@@ -227,4 +227,5 @@ public class ConsumerManager implements DisposableBean {
     public void destroy() throws Exception {
         consumerMap.values().forEach(Consumer::stop);
     }
+
 }

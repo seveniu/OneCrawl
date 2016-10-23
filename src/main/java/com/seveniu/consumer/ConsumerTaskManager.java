@@ -31,7 +31,6 @@ public class ConsumerTaskManager {
 //    private static final int MAX_WAIT = 1;
 
     private ThreadPoolExecutor spiderExecServer;
-    private PriorityBlockingQueue<MySpider> waitTaskQueue;
     private ConcurrentHashMap<String, MySpider> runningSpider;
     private ConcurrentHashMap<String, MySpider> allSpider = new ConcurrentHashMap<>();
     private volatile boolean stop = false;
@@ -44,7 +43,6 @@ public class ConsumerTaskManager {
     }
 
     public void start() {
-        waitTaskQueue = new PriorityBlockingQueue<>(MAX_WAIT);
         runningSpider = new ConcurrentHashMap<>(MAX_RUNNING);
 
         spiderExecServer = new SpiderThreadPoolExecutor(CORE_RUNNING, MAX_RUNNING,
@@ -57,29 +55,6 @@ public class ConsumerTaskManager {
                         return new Thread(r, consumer.getName() + "-spider-exec-thread-" + count.getAndIncrement());
                     }
                 });
-        exec();
-    }
-
-    private void exec() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-
-                    try {
-                        MySpider mySpider = waitTaskQueue.poll(10, TimeUnit.SECONDS);
-
-                        if (mySpider != null) {
-                            spiderExecServer.execute(mySpider);
-                            logger.info("count: {} ,consumer exec task : {}", count++, mySpider.getId());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }, "loop-poll-task-to-exec");
-        thread.start();
     }
 
     private final Object LOCK = new Object();
@@ -92,10 +67,10 @@ public class ConsumerTaskManager {
 
         // 优先级 小于 100 并且 等待队列满的时候, 返回 FULL
         // 如果优先级 大于等于 100, 不管队列是否满, 都立即执行
-        if (taskInfo.getPriority() < 100 && waitTaskQueue.size() >= MAX_WAIT) {
-            logger.warn("wait queue is full");
-            return TaskStatus.FULL;
-        }
+//        if (taskInfo.getPriority() < 100 && waitTaskQueue.size() >= MAX_WAIT) {
+//            logger.warn("wait queue is full");
+//            return TaskStatus.FULL;
+//        }
         PagesTemplate pagesTemplate;
         try {
             pagesTemplate = PagesTemplate.fromJson(taskInfo.getTemplateId(), taskInfo.getTemplate());
@@ -126,12 +101,9 @@ public class ConsumerTaskManager {
                     TemplateType templateType = TemplateType.get(taskInfo.getTemplateType().getValue());
                     MySpider mySpider = SpiderFactory.getSpider(spiderId, templateType, taskInfo, consumer, pagesTemplate);
                     allSpider.put(spiderId, mySpider);
-                    waitTaskQueue.add(mySpider);
-                    if (waitTaskQueue.size() > 0) {
-                        return TaskStatus.WAIT;
-                    } else {
-                        return TaskStatus.RUNNING;
-                    }
+
+                    spiderExecServer.execute(mySpider);
+                    return TaskStatus.RUNNING;
 
                 } catch (IllegalArgumentException e) {
                     logger.error("template type error : {}", e.getMessage());
@@ -146,8 +118,10 @@ public class ConsumerTaskManager {
         synchronized (LOCK) {
             stop = true;
             if (!stop) {
+                for (MySpider mySpider : runningSpider.values()) {
+                    mySpider.stop();
+                }
                 spiderExecServer.shutdownNow();
-                waitTaskQueue.clear();
                 allSpider.clear();
                 runningSpider.clear();
             }
@@ -163,18 +137,16 @@ public class ConsumerTaskManager {
 
 
     public SpiderRegulate.SpiderInfo getSpiderInfo() {
-        synchronized (LOCK) {
-            SpiderRegulate.SpiderInfo spiderInfo = new SpiderRegulate.SpiderInfo();
-            spiderInfo.setConsumerName(consumer.getName());
-            spiderInfo.setWaitSpiderNum(waitTaskQueue.size());
-            spiderInfo.setRunningSpiderNum(runningSpider.size());
-            int threadNum = 0;
-            for (SpiderTask spiderTask : runningSpider.values()) {
-                threadNum += spiderTask.taskInfo().getThreadNum();
-            }
-            spiderInfo.setRunThreadNum(threadNum);
-            return spiderInfo;
+        SpiderRegulate.SpiderInfo spiderInfo = new SpiderRegulate.SpiderInfo();
+        spiderInfo.setConsumerName(consumer.getName());
+        spiderInfo.setWaitSpiderNum(0);
+        spiderInfo.setRunningSpiderNum(runningSpider.size());
+        int threadNum = 0;
+        for (SpiderTask spiderTask : runningSpider.values()) {
+            threadNum += spiderTask.taskInfo().getThreadNum();
         }
+        spiderInfo.setRunThreadNum(threadNum);
+        return spiderInfo;
     }
 
     public List<TaskStatistic> getRunningTaskInfo() {
@@ -247,11 +219,8 @@ public class ConsumerTaskManager {
         return MAX_WAIT;
     }
 
-    public int getCurWaitSize() {
-        return waitTaskQueue.size();
-    }
 
     public int getCurRunningSize() {
-        return runningSpider.size();
+        return spiderExecServer.getActiveCount();
     }
 }

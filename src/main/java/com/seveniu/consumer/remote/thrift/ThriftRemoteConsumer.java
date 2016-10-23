@@ -92,7 +92,6 @@ public class ThriftRemoteConsumer implements ConsumerClient {
             client.taskStatusChange(taskId, taskStatus);
         } catch (TException e) {
             logger.warn("get task status change error : {}", e.getMessage());
-            e.printStackTrace();
         }
     }
 

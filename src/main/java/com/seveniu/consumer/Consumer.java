@@ -31,6 +31,7 @@ public class Consumer {
     public Consumer(String name, ConsumerClient consumerClient) {
         this.name = name;
         this.uuid = UUID.randomUUID().toString();
+        this.uuid = name;
         this.client = consumerClient;
     }
 
@@ -98,7 +99,6 @@ public class Consumer {
     public String toString() {
         return "Consumer{" +
                 " name : " + getName() +
-                ", type : " + this.getClass() +
                 "}";
     }
 

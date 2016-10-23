@@ -1,11 +1,13 @@
 package com.seveniu.thriftServer;
 
-import com.seveniu.util.Json;
+import com.seveniu.TaskQueue;
+import com.seveniu.consumer.Consumer;
 import com.seveniu.consumer.ConsumerManager;
 import com.seveniu.consumer.ConsumerTaskManager;
 import com.seveniu.def.TaskStatus;
 import com.seveniu.task.SpiderRegulate;
 import com.seveniu.task.TaskStatistic;
+import com.seveniu.util.Json;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -30,6 +32,8 @@ public class ThriftServer {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private volatile boolean running;
 
+    @Autowired
+    TaskQueue taskQueue;
     @Autowired
     ConsumerManager consumerManager;
     @Value("${thriftServerPort}")
@@ -92,12 +96,14 @@ public class ThriftServer {
 
         @Override
         public ResourceInfo getResourceInfo(String uuid) throws TException {
-            ConsumerTaskManager taskManager = consumerManager.getConsumerByUUID(uuid).getTaskManager();
+            Consumer consumer = consumerManager.getConsumerByUUID(uuid);
+            ConsumerTaskManager taskManager = consumer.getTaskManager();
             return new ResourceInfo(
                     taskManager.getMaxRunning(),
                     taskManager.getMaxWait(),
                     taskManager.getCurRunningSize(),
-                    taskManager.getCurWaitSize());
+                    taskQueue.getWaitSize(consumer.getName())
+            );
         }
 
 

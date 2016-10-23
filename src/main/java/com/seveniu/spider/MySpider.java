@@ -94,17 +94,9 @@ public class MySpider extends Spider implements SpiderTask, Comparable<MySpider>
     @Override
     public void close() {
         this.end = new Date();
-        destroyEach(downloader);
-        destroyEach(pageProcessor);
-        destroyEach(scheduler);
-        for (Pipeline pipeline : pipelines) {
-            destroyEach(pipeline);
-        }
-        threadPool.shutdown();
-
         this.taskStatistic.setEndTime(new Date());
-
         logger.info("spider stopped    :  {}", toString());
+        super.close();
     }
 
     @Override

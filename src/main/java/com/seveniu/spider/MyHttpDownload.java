@@ -246,7 +246,7 @@ public class MyHttpDownload extends HttpClientDownloader {
             if (charset == null) {
                 charset = "GBK";
             }
-            if (charset.toUpperCase().equals("GB2312")) {
+            if (charset.toUpperCase().equals("GB2312") || charset.toUpperCase().equals("GBK2312")) {
                 charset = "GBK";
             }
             this.logger.debug("Auto get charset: {}", charset);

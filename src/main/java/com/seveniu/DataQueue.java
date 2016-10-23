@@ -15,6 +15,7 @@ import redis.clients.jedis.JedisPool;
 @Service
 public class DataQueue {
 
+    private static final String PREFIX = "data-";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private JedisPool jedisPool;
@@ -28,7 +29,7 @@ public class DataQueue {
 
     public void addData(String key, String data) {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            jedis.rpush(key, data);
+            jedis.rpush(PREFIX + key, data);
         }
     }
 }
