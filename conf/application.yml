@@ -41,9 +41,15 @@ dataQueue: true
 
 ---
 spring:
-  profiles: dev
+  profiles: home
   redis:
     host: 10.211.55.3
     port: 6379
+  datasource:
+    url: jdbc:mysql://10.211.55.3:3306/data-queue?relaxAutoCommit=true&amp;zeroDateTimeBehavior=convertToNull&amp;useUnicode=true&amp;autoReconnect=true
+    driver-class-name: com.mysql.jdbc.Driver
+    username: xxx
+    password: password
+    platform: mysql
 dataQueue: true
 thriftServerPort: 20003

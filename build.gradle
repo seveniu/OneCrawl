@@ -42,6 +42,8 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-remote-shell:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}")
+    compile("mysql:mysql-connector-java")
 
     if (profile != "stable") {
         compile("org.springframework.boot:spring-boot-devtools:${springBootVersion}")

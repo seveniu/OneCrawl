@@ -1,4 +1,4 @@
-package com.seveniu;
+package com.seveniu.dataProcess;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool;
  * *
  */
 @Service
-public class DataQueue {
+public class RedisDataQueue implements DataQueue {
 
     private static final String PREFIX = "data-";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -21,8 +21,8 @@ public class DataQueue {
     private JedisPool jedisPool;
 
     @Autowired
-    public DataQueue(@Value("${spring.redis.host}") String host,
-                     @Value("${spring.redis.port}") int port) {
+    public RedisDataQueue(@Value("${spring.redis.host}") String host,
+                          @Value("${spring.redis.port}") int port) {
         logger.info("data queue host : {} , port : {}", host, port);
         this.jedisPool = new JedisPool(host, port);
     }

@@ -29,7 +29,6 @@ public class TaskQueue {
 
     @Autowired
     public TaskQueue(ConsumerManager consumerManager) {
-        logger.info("data queue host : {} , port : {}", host, port);
         this.consumerManager = consumerManager;
     }
 
