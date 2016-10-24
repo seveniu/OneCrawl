@@ -37,6 +37,12 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
+  datasource:
+    url: jdbc:mysql://rm-2zekr40y2iyir1b1w.mysql.rds.aliyuncs.com/gov_data?relaxAutoCommit=true&amp;autoCommit=false&amp;zeroDateTimeBehavior=convertToNull&amp;useUnicode=true&amp;autoReconnect=true
+    driver-class-name: com.mysql.jdbc.Driver
+    username: dhlz
+    password: Qntf-dK8jpD9TlaWf_qg
+    platform: mysql
 dataQueue: true
 
 ---
