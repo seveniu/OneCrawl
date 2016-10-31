@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConsumerTaskManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final int CORE_RUNNING = 20;
-    private static final int MAX_RUNNING = 40;
+    private static final int MAX_RUNNING = 30;
     private static final int MAX_WAIT = 1000;
 //    private static final int CORE_RUNNING = 1;
 //    private static final int MAX_RUNNING = 1;
