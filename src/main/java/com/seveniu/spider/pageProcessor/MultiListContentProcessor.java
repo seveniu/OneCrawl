@@ -103,8 +103,13 @@ public class MultiListContentProcessor extends MyPageProcessor {
             statistic.addCreateUrlCount(parseResult.getNextPageLinks().size());
             statistic.addNextUrlCount(1);
         } else {
-            statistic.addDoneNodeCount(1);
-            page.putField(CONTEXT_NODE, contextNode);
+            if (contextNode.getPages().size() == 0 || contextNode.getPages().get(0) == null) {
+                logger.warn("page is empty");
+                statistic.addErrorNodeCount(1);
+            } else {
+                statistic.addDoneNodeCount(1);
+                page.putField(CONTEXT_NODE, contextNode);
+            }
         }
     }
 
