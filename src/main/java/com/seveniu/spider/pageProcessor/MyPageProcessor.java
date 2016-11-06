@@ -57,7 +57,6 @@ public abstract class MyPageProcessor implements PageProcessor {
 
         //解析页面
         ParseResult parseResult = ParseHtml.parseHtml(url, page.getHtml(), template);
-
         // 统计
         statistic.addSuccessUrlCount(1);
         Node contextNode = (Node) page.getRequest().getExtra(CONTEXT_NODE);
