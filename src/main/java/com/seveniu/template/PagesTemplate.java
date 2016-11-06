@@ -29,7 +29,10 @@ public class PagesTemplate {
     }
 
     public Template getTemplate(int index) {
-        return templates.get(index);
+        if(index < templates.size()) {
+            return templates.get(index);
+        }
+        return null;
     }
 
     public String getId() {
