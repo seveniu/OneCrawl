@@ -85,7 +85,7 @@ public abstract class MyPageProcessor implements PageProcessor {
         return Site.me()
                 .setUserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.71 Safari/537.36")
                 .setRetryTimes(3)
-                .setTimeOut(10 * 1000)
+                .setTimeOut(40 * 1000)
                 ;
 
     }
