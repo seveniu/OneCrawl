@@ -1,5 +1,7 @@
 package com.seveniu.dataProcess;
 
+import com.seveniu.node.Node;
+import com.seveniu.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +29,9 @@ public class RedisDataQueue implements DataQueue {
         this.jedisPool = new JedisPool(host, port);
     }
 
-    public void addData(String key, String data) {
+    public void addData(String key, Node data) {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            jedis.rpush(PREFIX + key, data);
+            jedis.rpush(PREFIX + key, Json.toJson(data));
         }
     }
 }
