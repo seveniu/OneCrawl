@@ -1,8 +1,7 @@
 package com.seveniu.consumer.remote.thrift;
 
-import com.seveniu.dataProcess.DataQueue;
-import com.seveniu.dataProcess.RedisDataQueue;
 import com.seveniu.consumer.ConsumerClient;
+import com.seveniu.dataProcess.DataQueue;
 import com.seveniu.def.TaskStatus;
 import com.seveniu.node.Node;
 import com.seveniu.task.TaskStatistic;
@@ -66,11 +65,11 @@ public class ThriftRemoteConsumer implements ConsumerClient {
 
     @Override
     public void done(Node node) {
-        String data = Json.toJson(node);
         if (dataQueue != null) {
-            dataQueue.addData(remoteConsumerConfig.getName(), data);
+            dataQueue.addData(remoteConsumerConfig.getName(), node);
         } else {
             try {
+                String data = Json.toJson(node);
                 client.done(data);
             } catch (Exception e) {
                 logger.warn("consumer {} done warn : {}", remoteConsumerConfig.getName(), e.getMessage());
