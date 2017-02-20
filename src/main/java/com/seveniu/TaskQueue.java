@@ -36,7 +36,7 @@ public class TaskQueue {
     public void schedule() {
         try {
             Jedis jedis = new Jedis(host, port);
-            logger.info("schedule task");
+            logger.info("schedule task, redis host :{}", host);
             for (Consumer consumer : this.consumerManager.getAllConsumer()) {
                 int canRunNum = consumer.getTaskManager().getMaxRunning() - consumer.getTaskManager().getCurRunningSize();
                 for (int i = 0; i < canRunNum; i++) {
