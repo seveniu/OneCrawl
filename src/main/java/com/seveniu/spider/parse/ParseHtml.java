@@ -82,6 +82,9 @@ public class ParseHtml {
                 case PURE_TEXT:
                     parsePureContent(field);
                     break;
+                case DOWNLOAD_LINK:
+                    parseDownloadLinkLabel(field);
+                    break;
                 default:
                     logger.error("field html type is not found : {}", field.getType());
                     return null;
@@ -196,7 +199,7 @@ public class ParseHtml {
                 if (nextUrl.length() > 0) {
                     parseResult.addPageLink(new Link(listTexts.get(0), nextUrl));
                 }
-            } else if (listUrls.size() > 1) {
+            } else {
                 int index = findNextLink(listTexts);
                 if (index > -1) {
                     String nextUrl = listUrls.get(index);

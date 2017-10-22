@@ -22,7 +22,7 @@ public class MysqlDataQueueTest {
     MysqlDataQueue mysqlDataQueue;
     @Test
     public void addData() throws Exception {
-        mysqlDataQueue.addData("asdf","kkkkkkk");
+//        mysqlDataQueue.addData("asdf","kkkkkkk");
     }
 
 }
