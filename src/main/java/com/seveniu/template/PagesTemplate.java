@@ -1,6 +1,6 @@
 package com.seveniu.template;
 
-import com.alibaba.fastjson.TypeReference;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.seveniu.util.Json;
 import com.seveniu.template.def.Field;
 import com.seveniu.template.def.Template;
